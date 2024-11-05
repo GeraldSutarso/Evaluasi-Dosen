@@ -5,17 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Lecturer extends Model
+class Matkul extends Model
 {
     use HasFactory;
-    public function matkuls() {
-        return $this->hasMany(Matkul::class);
-        
+    public function lecturer() {
+        return $this->belongsTo(Lecturer::class);
+    }
+    public function evaluations() {
+        return $this->hasMany(Evaluation::class);
     }
     protected $fillable = [
         'name',
+        'lecturer_id',
     ];
     protected $primaryKey = 'id';
     // public $incrementing = false;
-    protected $table = 'lecturer';
+    protected $table = 'matkuls';
 }

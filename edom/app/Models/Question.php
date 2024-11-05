@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Question extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'text',
+        'type',
+    ];
+    protected $primaryKey = 'id';
+    // public $incrementing = false;
+    protected $table = 'question';
 }
