@@ -8,17 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Matkul extends Model
 {
     use HasFactory;
-    public function lecturer() {
-        return $this->belongsTo(Lecturer::class);
+    protected $fillable = ['name', 'description'];
+
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_matkul')->withPivot('week_number');
     }
-    public function evaluations() {
+
+    public function lecturers()
+    {
+        return $this->belongsToMany(Lecturer::class, 'lecturer_matkul');
+    }
+
+    public function evaluations()
+    {
         return $this->hasMany(Evaluation::class);
     }
-    protected $fillable = [
-        'name',
-        'lecturer_id',
-    ];
-    protected $primaryKey = 'id';
-    // public $incrementing = false;
-    protected $table = 'matkuls';
 }

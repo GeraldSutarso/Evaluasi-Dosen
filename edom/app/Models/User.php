@@ -19,32 +19,18 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username',
-        'password',
+        'student_id',
+        'group_id'
     ];
+    
+        public function group()
+    {
+        return $this->belongsTo(Group::class);
+    }
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-    protected $primaryKey = 'id';
-    protected $table = 'users';
-    public function evaluations() {
+    public function evaluations()
+    {
         return $this->hasMany(Evaluation::class);
     }
+    
 }

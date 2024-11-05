@@ -12,7 +12,8 @@ class Question extends Model
         'text',
         'type',
     ];
-    protected $primaryKey = 'id';
-    // public $incrementing = false;
-    protected $table = 'question';
+    public function responses()
+    {
+        return $this->hasMany(Response::class);
+    }
 }

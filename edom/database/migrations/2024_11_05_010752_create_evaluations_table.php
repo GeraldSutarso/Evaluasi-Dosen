@@ -12,9 +12,9 @@ return new class extends Migration
     public function up() {
         Schema::create('evaluations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('matkul_id')->constrained('matkuls')->onDelete('cascade');
-            $table->boolean('completed')->default(false);
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // User who submitted the evaluation
+            $table->foreignId('matkul_id')->constrained()->onDelete('cascade'); // Matkul evaluated
+            $table->foreignId('lecturer_id')->constrained()->onDelete('cascade'); // Lecturer being evaluated
             $table->timestamps();
         });
     }

@@ -8,23 +8,33 @@ use Illuminate\Database\Eloquent\Model;
 class Evaluation extends Model
 {
     use HasFactory;
-    public function student() {
-        return $this->belongsTo(User::class, 'student_id');
+
+    protected $fillable = [
+        'student_id',
+        'matkul_id',
+        'lecturer_id',
+        'completed',
+        'week_number',
+    ];
+
+    public function student()
+    {
+        return $this->belongsTo(User::class);
     }
-    public function responses() {
-        return $this->hasMany(Response::class);
-    }
-    public function matkuls() {
+
+    public function matkul()
+    {
         return $this->belongsTo(Matkul::class);
     }
-    protected $fillable = [
-        'class_id',
-        'student_id',
-        'completed',
-        'submit_time',
-    ];
-    protected $primaryKey = 'id';
-    // public $incrementing = false;
-    protected $table = 'evaluation';
+
+    public function lecturer()
+    {
+        return $this->belongsTo(Lecturer::class);
+    }
+
+    public function responses()
+    {
+        return $this->hasMany(Response::class);
+    }
     
 }

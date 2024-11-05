@@ -12,8 +12,8 @@ return new class extends Migration
     public function up() {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
-            $table->string('type');
+            $table->string('text'); // The question text
+            $table->string('type'); // The type of question
             $table->timestamps();
         });
     }

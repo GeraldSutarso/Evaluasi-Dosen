@@ -9,10 +9,11 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up() {
-        Schema::create('matkuls', function (Blueprint $table) {
+    public function up(): void
+    {
+        Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Name of the class
+            $table->string('name'); // Group name (e.g., A, B, C, ...)
             $table->timestamps();
         });
     }
@@ -22,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('matkuls');
+        Schema::dropIfExists('groups');
     }
 };
