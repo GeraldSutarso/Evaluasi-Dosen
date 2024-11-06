@@ -32,18 +32,17 @@ class AuthController extends Controller
     public function postLogin(Request $request): RedirectResponse
     {
         $request->validate([
-            'username' => 'required',
-            'password' => 'required',
+            'student_id' => 'required',
         ]);
    
-        $credentials = $request->only('username', 'password');
+        $credentials = $request->only('student_id');
         $remember = $request->filled('remember'); //check the remember box
         if (Auth::attempt($credentials,$remember)) {
-            return redirect("home")->withSuccess('You have Successfully logged in!');
+            return redirect("home")->withSuccess('Anda telah masuk!');
 
         }
   
-        return back()->withErrors(['errorLogin' => 'Oops! You have entered invalid credentials']);
+        return back()->withErrors(['errorLogin' => 'Waduh! anda memasukkan NIM yang salah.']);
     }
       
     /**
@@ -51,26 +50,7 @@ class AuthController extends Controller
      *
      * @return response()
      */
-    public function postRegistration(Request $request): RedirectResponse
-    {  
-        $request->validate([
-            'username' => 'required',
-            'username' => 'required|username|unique:users',
-            'password' => 'required|min:6',
-            'department' =>'required'
-        ]);
-           
-        $data = $request->all();
-        $check = $this->create($data);
-        $remember = $request->filled('remember'); //check the remember box
-        return redirect("home")->withSuccess('Great! You have Successfully signed in');
-    }
     
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
     public function home(Request $request)
     {
         if(Auth::check()){
@@ -79,7 +59,7 @@ class AuthController extends Controller
             return view('home')->with('user',$user);
         }
         Session::flush();
-        return redirect('login')->withErrors(['errorHome' => 'You have no access']);
+        return redirect('login')->withErrors(['errorHome' => 'Maaf, tak ada akses']);
     }
     
     /**
