@@ -15,6 +15,8 @@ return new class extends Migration
             $table->foreignId('evaluation_id')->constrained('evaluations')->onDelete('cascade');
             $table->foreignId('question_id')->constrained('questions')->onDelete('cascade');
             $table->integer('response_value'); // Adjust type based on response type (e.g., rating scale)
+            $table->boolean('completed')->default(0);
+            $table->integer('week_number');
             $table->timestamps();
         });
     }

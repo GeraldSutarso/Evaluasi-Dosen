@@ -2,8 +2,7 @@
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #992424">
   <div class="container-fluid">
     <a class="navbar-brand" href="/">
-      <h4><img src="{{ asset('img/Logo (3295x1171).png') }}" style="width: 150px; height: auto;></h4>
-      <h6 style="color: aliceblue">AKTI | EDOM</h6>
+      <h4><img src="{{ asset('img/Logo (3295x1171).png') }}" style="width: 150px; height: auto;"></h4>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -12,9 +11,7 @@
       <ul class="navbar-nav ms-auto">
         @guest
           <li class="nav-item active">
-            <a class="nav-link" href="{{ route('login') }}">
-              <button class="btn btn-primary">Masuk</button>
-            </a>
+            <b style="color: aliceblue">AKTI | EDOM</b>
           </li>
         @else
           <li class="nav-item">

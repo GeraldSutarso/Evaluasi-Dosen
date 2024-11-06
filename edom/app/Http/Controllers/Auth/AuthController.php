@@ -30,20 +30,23 @@ class AuthController extends Controller
      * @return response()
      */
     public function postLogin(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'student_id' => 'required',
-        ]);
-   
-        $credentials = $request->only('student_id');
-        $remember = $request->filled('remember'); //check the remember box
-        if (Auth::attempt($credentials,$remember)) {
-            return redirect("home")->withSuccess('Anda telah masuk!');
+        {
+            $request->validate([
+                'student_id' => 'required',
+            ]);
 
+            // Find the user by student_id
+            $user = User::where('student_id', $request->input('student_id'))->first();
+
+            if ($user) {
+                // Log in the user
+                Auth::login($user);
+                return redirect("home")->withSuccess('Anda telah masuk!');
+            }
+
+            // If no user was found, return an error
+            return back()->withErrors(['errorLogin' => 'Waduh! anda memasukkan NIM yang salah.']);
         }
-  
-        return back()->withErrors(['errorLogin' => 'Waduh! anda memasukkan NIM yang salah.']);
-    }
       
     /**
      * Write code on Method

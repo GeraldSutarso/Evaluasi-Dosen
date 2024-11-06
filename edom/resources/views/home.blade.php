@@ -14,7 +14,7 @@
             @endforeach
     </div>
     @endif
-    <a href="{{ route('step1') }}"><button class="btn btn-success">+ Add</button></a><br><br>
+    
     <div class="card">
         <div class="card-header">
             <form action="{{ route('search') }}" method="GET" class="float-end" style="max-width: 300px;">
