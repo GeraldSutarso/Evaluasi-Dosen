@@ -56,7 +56,7 @@ class HomeController extends Controller
         } 
         // If the user is not an admin, only show evaluations tied to their user ID
         else {
-            $evaluations = Evaluation::where('student_id', $user->id)->paginate(10); 
+            $evaluations = Evaluation::where('user_id', $user->id)->paginate(10); 
         }
 
         // Pass evaluations and user to the view

@@ -15,7 +15,7 @@
           </li>
         @else
           <li class="nav-item">
-           <a class="nav-link" href="/"><span>Welcome, {{ auth()->user()->username }}</span></a>
+           <a class="nav-link" href="#"><span>Welcome, {{ auth()->user()->username }}</span></a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ route('home') }}">
