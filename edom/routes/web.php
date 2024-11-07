@@ -30,6 +30,7 @@ Route::fallback(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     // Admin Home Route (GET request)
     Route::get('/admin/home', [AdminController::class, 'home'])->name('admin.home');
+    Route::get('admin/evaluation/{evaluation_id}', [AdminController::class, 'showEvaluationUsers'])->name('admin.showEvaluationUsers');
 
     // Admin Search Route (GET request)
     Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');

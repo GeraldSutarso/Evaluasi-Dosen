@@ -63,21 +63,23 @@
                     <tbody>
                         @foreach($evaluations as $index => $evaluation)
                             @php
-                                // Check if all users have completed the evaluation for this matkul and lecturer
                                 $usersNotCompleted = $evaluation->users()
                                     ->where('matkul_id', $evaluation->matkul_id)
                                     ->where('lecturer_id', $evaluation->lecturer_id)
                                     ->where('week_number', $evaluation->week_number)
-                                    ->where('completed', false) // Assuming there's a 'completed' field in evaluations for each user
+                                    ->where('completed', false)
                                     ->exists();
                             @endphp
-
-                            <tr style="background-color: {{ $usersNotCompleted ? '#ffd1d1' : '#e2fade' }};">
+                    
+                            <tr style="background-color: {{ $usersNotCompleted ? '#ffd1d1' : '#e2fade' }};" 
+                                onclick="window.location='{{ route('admin.showEvaluationUsers', ['evaluation_id' => $evaluation->id]) }}'">
                                 <td>{{ $startingNumber + $index }}</td>
                                 <td>{{ $evaluation->matkul->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->lecturer->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->week_number }}</td>
-                                <td>{{ $usersNotCompleted ? 'Belum diisi' : 'Sudah diisi' }}</td>
+                                <td>
+                                    {{ $usersNotCompleted ? 'Belum diisi' : 'Sudah diisi' }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
