@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Home\HomeController;
+use App\Http\Controllers\Evaluasi\EvaluasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,10 @@ Route::middleware(['auth.check'])->group(function () {
     //Fallback
     Route::fallback(function () {
         return redirect('/');
+
+    //Evaluation routes
+    Route::get('/evaluation/{id}', [EvaluasiController::class, 'show'])->name('evaluation.show');
+
     });
     Route::get('ddsession', function(){
         return view('ddsession');

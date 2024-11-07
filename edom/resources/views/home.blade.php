@@ -39,24 +39,22 @@
                             <th>Nama Dosen</th>
                             <th>Status Evaluasi</th>
                             <th>Minggu Ke</th>
-                            <!-- Add other table headers as needed -->
                         </tr>
                     </thead>
                     @php
-                        $currentPage = $evaluations->currentPage(); // Get the current page
-                        $perPage = $evaluations->perPage(); // Get the number of items per page
-                        $startingNumber = ($currentPage - 1) * $perPage + 1; // Calculate the starting number
+                        $currentPage = $evaluations->currentPage();
+                        $perPage = $evaluations->perPage();
+                        $startingNumber = ($currentPage - 1) * $perPage + 1;
                     @endphp
-
+            
                     <tbody>
                         @foreach($evaluations as $index => $evaluation)
-                            <tr>
+                            <tr onclick="window.location='{{ route('evaluation.show', ['id' => $evaluation->id]) }}'" style="cursor:pointer;">
                                 <td>{{ $startingNumber + $index }}</td>
-                                <td>{{ $evaluation->matkul->name }}</td>
-                                <td>{{ $evaluation->lecturer->name }}</td>
-                                <td>{{ $evaluation->completed }}</td>
+                                <td>{{ $evaluation->matkul->name ?? 'N/A' }}</td>
+                                <td>{{ $evaluation->lecturer->name ?? 'N/A' }}</td>
+                                <td>{{ $evaluation->completed ? 'Completed' : 'Pending' }}</td>
                                 <td>{{ $evaluation->week_number }}</td>
-                                <!-- Add other data columns as needed -->
                             </tr>
                         @endforeach
                     </tbody>
