@@ -39,6 +39,13 @@ class AuthController extends Controller
             $user = User::where('student_id', $request->input('student_id'))->first();
 
             if ($user) {
+
+                // Check if the user is an admin (group_id = 99)
+                if ($user->group_id == 99) {
+                    // Redirect to the admin home page
+                    Auth::login($user);
+                    return redirect()->route('admin.home')->withSuccess('Selamat datang, Admin!');
+                }
                 // Log in the user
                 Auth::login($user);
                 return redirect("home")->withSuccess('Anda telah masuk!');

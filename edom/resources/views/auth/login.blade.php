@@ -12,30 +12,21 @@
                       <form action="{{ route('login.post') }}" method="POST">
                           @csrf
                           <div class="form-group row">
-                              <label for="student_id" class="col-md-4 col-form-label text-md-right">NIM:</label>
-                              <div class="col-md-6">
-                                  <input type="text" id="student_id" class="form-control" placeholder="Masukkan NIM Anda" name="student_id" required autofocus>
-                                  @if ($errors->has('student_id'))
-                                      <div class="alert alert-danger">
-                                        <ul>
-                                            <li>{{ $errors }}</li>
-                                        </ul>
-                                      </div>
-                                  @endif
-                              </div>
-                          </div>
-                          <br>
-                          <br>
-                          <div class="form-group row">
-                              <div class="col-md-6 offset-md-4">
-                                  <div class="checkbox">
-                                      <label>
-                                          <input type="checkbox" name="remember"> Ingat aku
-                                      </label>
-                                  </div>
-                              </div>
-                          </div>
-                          <br>
+                            <label for="student_id" class="col-md-4 col-form-label text-md-right">NIM:</label>
+                            <div class="col-md-6">
+                                <input type="text" id="student_id" class="form-control" placeholder="Masukkan NIM Anda" name="student_id" required autofocus>
+                            </div>
+                            <br>
+                            <br>
+                            <label class="col-md-4 col-form-label text-md-right">&nbsp;</label>
+                            @if ($errors->any())
+                            <div class="col-md-6 alert alert-danger">
+                                    @foreach ($errors->all() as $error)
+                                        {{ $error }}
+                                    @endforeach
+                            </div>
+                            @endif
+                          </div>                          
                           <div class="col-md-6 offset-md-4">
                               <button type="submit" class="btn btn-primary">
                                   Masuk

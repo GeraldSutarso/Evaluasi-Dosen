@@ -23,16 +23,6 @@ class HomeController extends Controller
      *
      * @return response()
      */
-    // public function home(Request $request)
-    // {
-    //     if(!Auth::check()){//if not logged in yet, the flush the session, in case some of the steps session stays
-    //                         // then redirect to the login page, or the sign in page
-    //         Session::flush();
-    //         return redirect('login')->withErrors(['errorHome' => 'You have no access']);
-
-    //     }
-    //     return view('home');
-    // }
 
     public function home(Request $request)
     {
@@ -44,7 +34,12 @@ class HomeController extends Controller
         }
 
         $user = Auth::user();
+        $query = Evaluation::query();
 
+        // Check for week filter
+        if ($request->filled('week')) {
+            $query->where('week_number', $request->input('week'));
+        }
         // Clear any session data related to evaluations, if needed
         $request->session()->forget([
             // Add session keys here if you need to clear specific ones
@@ -55,7 +50,7 @@ class HomeController extends Controller
             $evaluations = Evaluation::with(['lecturer', 'matkul', 'response'])->paginate(10); 
         } else {
             // Regular user: retrieve only evaluations tied to their student ID with related data
-            $evaluations = Evaluation::where('student_id', $user->id)
+            $evaluations = Evaluation::where('user_id', $user->id)
                                     ->with(['lecturer', 'matkul', 'response'])
                                     ->paginate(10); 
         }
@@ -74,30 +69,65 @@ class HomeController extends Controller
     public function search(Request $request)
     {
         $searchTerm = $request->input('search');
+        $keywords = explode(' ', $searchTerm); // Split search term by spaces into keywords
 
         // If admin (group 99), allow search across all models
-        if (Auth::user()->group == 99) {
-            $evaluations = Evaluation::where('student_id', 'LIKE', "%{$searchTerm}%")
-                            ->orWhere('lecturer_id', 'LIKE', "%{$searchTerm}%")
-                            ->orWhere('matkul_id', 'LIKE', "%{$searchTerm}%")
-                            ->orWhere('week_number', 'LIKE', "%{$searchTerm}%")
-                            ->paginate(10);
-                            
-            $responses = Response::where('answer', 'LIKE', "%{$searchTerm}%")->paginate(10);
-            $questions = Question::where('question', 'LIKE', "%{$searchTerm}%")->paginate(10);
-            $users = User::where('name', 'LIKE', "%{$searchTerm}%")->paginate(10);
-            $lecturers = Lecturer::where('name', 'LIKE', "%{$searchTerm}%")->paginate(10);
-            $matkuls = Matkul::where('name', 'LIKE', "%{$searchTerm}%")->paginate(10);
-            $groups = Group::where('name', 'LIKE', "%{$searchTerm}%")->paginate(10);
+        if (Auth::user()->group_id == 99) {
+            $evaluations = Evaluation::where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('user_id', 'LIKE', "%{$keyword}%")
+                        ->orWhere('lecturer_id', 'LIKE', "%{$keyword}%")
+                        ->orWhere('matkul_id', 'LIKE', "%{$keyword}%")
+                        ->orWhere('week_number', 'LIKE', "%{$keyword}%");
+                }
+            })->paginate(10);
+
+            $responses = Response::where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('answer', 'LIKE', "%{$keyword}%");
+                }
+            })->paginate(10);
+
+            $questions = Question::where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('question', 'LIKE', "%{$keyword}%");
+                }
+            })->paginate(10);
+
+            $users = User::where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('name', 'LIKE', "%{$keyword}%");
+                }
+            })->paginate(10);
+
+            $lecturers = Lecturer::where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('name', 'LIKE', "%{$keyword}%");
+                }
+            })->paginate(10);
+
+            $matkuls = Matkul::where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('name', 'LIKE', "%{$keyword}%");
+                }
+            })->paginate(10);
+
+            $groups = Group::where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('name', 'LIKE', "%{$keyword}%");
+                }
+            })->paginate(10);
 
             return view('home', compact('evaluations', 'responses', 'questions', 'users', 'lecturers', 'matkuls', 'groups'));
         } else {
-            // Regular user, only access evaluations tied to their student_id
-            $evaluations = Evaluation::where('student_id', Auth::user()->id)
-                            ->where(function ($query) use ($searchTerm) {
-                                $query->where('lecturer_id', 'LIKE', "%{$searchTerm}%")
-                                    ->orWhere('matkul_id', 'LIKE', "%{$searchTerm}%")
-                                    ->orWhere('week_number', 'LIKE', "%{$searchTerm}%");
+            // Regular user, only access evaluations tied to their user_id
+            $evaluations = Evaluation::where('user_id', Auth::user()->id)
+                            ->where(function ($query) use ($keywords) {
+                                foreach ($keywords as $keyword) {
+                                    $query->orWhere('lecturer_id', 'LIKE', "%{$keyword}%")
+                                        ->orWhere('matkul_id', 'LIKE', "%{$keyword}%")
+                                        ->orWhere('week_number', 'LIKE', "%{$keyword}%");
+                                }
                             })
                             ->paginate(10);
 

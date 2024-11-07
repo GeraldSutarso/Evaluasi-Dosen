@@ -49,25 +49,35 @@
                             <th>No.</th>
                             <th>Mata Kuliah</th>
                             <th>Nama Dosen</th>
-                            <th>Status Evaluasi</th>
                             <th>Minggu Ke</th>
+                            <th>Status Evaluasi</th>
                         </tr>
                     </thead>
+                    
                     @php
                         $currentPage = $evaluations->currentPage();
                         $perPage = $evaluations->perPage();
                         $startingNumber = ($currentPage - 1) * $perPage + 1;
                     @endphp
-            
+                    
                     <tbody>
                         @foreach($evaluations as $index => $evaluation)
-                            <tr onclick="window.location='{{ route('evaluation.show', ['id' => $evaluation->id]) }}'"
-                                style="cursor:pointer; background-color: {{ $evaluation->completed ? '#e2fade' : '#ffd1d1' }};">
+                            @php
+                                // Check if all users have completed the evaluation for this matkul and lecturer
+                                $usersNotCompleted = $evaluation->users()
+                                    ->where('matkul_id', $evaluation->matkul_id)
+                                    ->where('lecturer_id', $evaluation->lecturer_id)
+                                    ->where('week_number', $evaluation->week_number)
+                                    ->where('completed', false) // Assuming there's a 'completed' field in evaluations for each user
+                                    ->exists();
+                            @endphp
+
+                            <tr style="background-color: {{ $usersNotCompleted ? '#ffd1d1' : '#e2fade' }};">
                                 <td>{{ $startingNumber + $index }}</td>
                                 <td>{{ $evaluation->matkul->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->lecturer->name ?? 'N/A' }}</td>
-                                <td>{{ $evaluation->completed ? 'Sudah diisi' : 'Belum diisi' }}</td>
                                 <td>{{ $evaluation->week_number }}</td>
+                                <td>{{ $usersNotCompleted ? 'Belum diisi' : 'Sudah diisi' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

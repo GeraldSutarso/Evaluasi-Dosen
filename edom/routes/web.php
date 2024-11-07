@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Evaluasi\EvaluasiController;
+use App\Http\Controllers\Admin\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,20 @@ Route::get('login', [AuthController::class, 'index'])->name('login');
 Route::post('post-login', [AuthController::class, 'postLogin'])->name('login.post'); 
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
+//Fallback
+Route::fallback(function () {
+    return redirect('/');
+});
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    // Admin Home Route (GET request)
+    Route::get('/admin/home', [AdminController::class, 'home'])->name('admin.home');
+
+    // Admin Search Route (GET request)
+    Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');
+
+});
+
 //middleware check if user authenticated
 Route::middleware(['auth.check'])->group(function () {
     //routes that require user to be authenticated
@@ -32,15 +47,11 @@ Route::middleware(['auth.check'])->group(function () {
     //the search bar
     Route::get('/search', [HomeController::class, 'search'])->name('search');
     
-    //Fallback
-    Route::fallback(function () {
-        return redirect('/');
-
     //Evaluation routes
     Route::get('/evaluation/{id}', [EvaluasiController::class, 'show'])->name('evaluation.show');
 
-    });
     Route::get('ddsession', function(){
         return view('ddsession');
     })->name('ddsession');
-    });
+    }
+);
