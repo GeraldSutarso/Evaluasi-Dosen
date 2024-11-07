@@ -48,11 +48,11 @@ class AdminController extends Controller
 
             if ($user->group_id == 99) {
                 // Admin: retrieve all evaluations with related data
-                $evaluations = Evaluation::with(['lecturer', 'matkul', 'response'])->paginate(10);
+                $evaluations = Evaluation::with(['lecturers', 'matkuls', 'users'])->paginate(10);
             } else {
                 // Regular user: retrieve only evaluations tied to their user_id with related data
                 $evaluations = Evaluation::where('user_id', $user->id)
-                    ->with(['lecturer', 'matkul', 'response'])
+                    ->with(['lecturers', 'matkuls'])
                     ->paginate(10);
             }
 
@@ -86,19 +86,8 @@ class AdminController extends Controller
         
                 $evaluations = $query->paginate(10);
         
-                // Search for responses, questions, users, lecturers, matkuls, and groups
-                $responses = Response::where(function ($query) use ($keywords) {
-                    foreach ($keywords as $keyword) {
-                        $query->orWhere('answer', 'LIKE', "%{$keyword}%");
-                    }
-                })->paginate(10);
-        
-                $questions = Question::where(function ($query) use ($keywords) {
-                    foreach ($keywords as $keyword) {
-                        $query->orWhere('question', 'LIKE', "%{$keyword}%");
-                    }
-                })->paginate(10);
-        
+                // Search for users, lecturers, matkuls, and groups
+                
                 $users = User::where(function ($query) use ($keywords) {
                     foreach ($keywords as $keyword) {
                         $query->orWhere('name', 'LIKE', "%{$keyword}%");
@@ -124,7 +113,7 @@ class AdminController extends Controller
                 })->paginate(10);
         
                 return view('admin.home', compact(
-                    'evaluations', 'responses', 'questions', 'users', 'lecturers', 'matkuls', 'groups'
+                    'evaluations', 'users', 'lecturers', 'matkuls', 'groups'
                 ));
             } else {
                 // Regular user, only access evaluations tied to their user_id

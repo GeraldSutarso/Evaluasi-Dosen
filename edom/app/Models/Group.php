@@ -14,7 +14,7 @@ class Group extends Model
     {
         return $this->hasMany(User::class);
     }
-
+    protected $table = 'groups';
     public function matkuls()
     {
         return $this->belongsToMany(Matkul::class, 'group_matkul')

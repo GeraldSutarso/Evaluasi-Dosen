@@ -16,6 +16,7 @@ class Evaluation extends Model
         'completed',
         'week_number',
     ];
+    protected $table = 'evaluations';
 
     public function student()
     {

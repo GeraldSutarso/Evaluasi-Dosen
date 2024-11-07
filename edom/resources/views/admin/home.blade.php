@@ -18,7 +18,7 @@
     <div class="card">
         <div class="card-header">
             <!-- Search Form -->
-            <form action="{{ route('search') }}" method="GET" class="float-end" style="max-width: 300px;">
+            <form action="{{ route('admin.search') }}" method="GET" class="float-end" style="max-width: 300px;">
                 <div class="input-group">
                     <input type="text" class="form-control" placeholder="Search..." name="search">
                     <button class="btn btn-outline-secondary" type="submit" id="button-search">
@@ -28,7 +28,7 @@
             </form>
 
             <!-- Week Filter Form -->
-            <form action="{{ route('home') }}" method="GET" class="d-inline-block me-3">
+            <form action="{{ route('admin.home') }}" method="GET" class="d-inline-block me-3">
                 <div class="input-group">
                     <select name="week" class="form-select" onchange="this.form.submit()">
                         <option value="">Filter per Minggu</option>

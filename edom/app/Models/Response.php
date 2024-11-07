@@ -21,5 +21,5 @@ class Response extends Model
     ];
     protected $primaryKey = 'id';
     // public $incrementing = false;
-    protected $table = 'response';
+    protected $table = 'responses';
 }

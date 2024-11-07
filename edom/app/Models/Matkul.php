@@ -24,4 +24,5 @@ class Matkul extends Model
     {
         return $this->hasMany(Evaluation::class);
     }
+    protected $table = 'matkuls';
 }

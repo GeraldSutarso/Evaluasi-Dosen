@@ -8,14 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Lecturer extends Model
 {
     use HasFactory;
-    public function matkuls() {
-        return $this->hasMany(Matkul::class);
-        
+    
+    protected $fillable = ['name'];
+
+    public function matkuls()
+    {
+        return $this->belongsToMany(Matkul::class, 'lecturer_matkul');
     }
-    protected $fillable = [
-        'name',
-    ];
-    protected $primaryKey = 'id';
-    // public $incrementing = false;
-    protected $table = 'lecturer';
+
+    public function evaluations()
+    {
+        return $this->hasMany(Evaluation::class);
+    }
+    protected $table = 'lecturers';
 }

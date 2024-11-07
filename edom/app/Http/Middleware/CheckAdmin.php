@@ -19,7 +19,7 @@ class CheckAdmin
         // Check if the logged-in user is an admin
         if (Auth::check() && Auth::user()->group_id != 99) {
             // Redirect to the regular home page if not an admin
-            return redirect('/home');
+            return redirect('home');
         }
 
         return $next($request);

@@ -27,7 +27,7 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Group::class);
     }
-
+    protected $table = 'users';
     public function evaluations()
     {
         return $this->hasMany(Evaluation::class);

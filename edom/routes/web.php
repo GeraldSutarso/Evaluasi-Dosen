@@ -49,6 +49,7 @@ Route::middleware(['auth.check'])->group(function () {
     
     //Evaluation routes
     Route::get('/evaluation/{id}', [EvaluasiController::class, 'show'])->name('evaluation.show');
+    Route::post('/evaluation/{id}/submit', [EvaluasiController::class, 'submitEvaluation'])->name('evaluation.submit');
 
     Route::get('ddsession', function(){
         return view('ddsession');
