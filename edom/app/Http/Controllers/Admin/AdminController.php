@@ -53,17 +53,23 @@ class AdminController extends Controller
 
     public function showEvaluationGroups($matkul_id, $lecturer_id, $week)
     {
-        // Retrieve groups with users who attended the selected matkul and lecturer in the given week
-        $groups = Group::with(['users' => function ($query) use ($matkul_id, $lecturer_id, $week) {
-            $query->whereHas('evaluations', function ($evaluationQuery) use ($matkul_id, $lecturer_id, $week) {
-                $evaluationQuery->where('matkul_id', $matkul_id)
-                                ->where('lecturer_id', $lecturer_id)
-                                ->where('week_number', $week);
-            });
+        // Load all groups with their users and the evaluations filtered by the specific criteria
+        $groups = Group::with(['users.evaluations' => function ($query) use ($matkul_id, $lecturer_id, $week) {
+            $query->where('matkul_id', $matkul_id)
+                    ->where('lecturer_id', $lecturer_id)
+                    ->where('week_number', $week);
         }])->get();
+
+        // Loop through each group to calculate if all users have completed their evaluations
+        foreach ($groups as $group) {
+            $group->setAttribute('allCompleted', $group->users->every(function ($user) {
+                return $user->evaluations->where('completed', true)->isNotEmpty();
+            }));
+        }
 
         return view('admin.evaluation_groups', compact('groups', 'matkul_id', 'lecturer_id', 'week'));
     }
+
 
 
     public function search(Request $request)
@@ -151,5 +157,17 @@ class AdminController extends Controller
             ->paginate(10);
 
         return view('admin.evaluation-users', compact('evaluation', 'users'));
+    }
+    public function showGroupUsers($group_id, $matkul_id, $lecturer_id, $week)
+    {
+        // Retrieve users in the group with their evaluation status
+        $users = User::where('group_id', $group_id)
+            ->with(['evaluations' => function ($query) use ($matkul_id, $lecturer_id, $week) {
+                $query->where('matkul_id', $matkul_id)
+                    ->where('lecturer_id', $lecturer_id)
+                    ->where('week_number', $week);
+            }])->get();
+
+        return view('admin.group_users', compact('users', 'matkul_id', 'lecturer_id', 'week'));
     }
 }
