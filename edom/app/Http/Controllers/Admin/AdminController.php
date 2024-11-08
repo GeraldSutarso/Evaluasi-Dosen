@@ -21,44 +21,50 @@ class AdminController extends Controller
 {
     public function home(Request $request)
     {
-        if (!Auth::check()) {
-            // If not logged in, flush session and redirect to login page
-            Session::flush();
-            return redirect('login')->withErrors(['errorHome' => 'You have no access']);
+        // Retrieve filter and search inputs
+        $week = $request->input('week');
+        $search = $request->input('search');
+
+        // Query evaluations with filters
+        $evaluationsQuery = Evaluation::with(['lecturer', 'matkul'])
+            ->select('matkul_id', 'lecturer_id', 'week_number')
+            ->groupBy('matkul_id', 'lecturer_id', 'week_number');
+
+        // Apply week filter if specified
+        if ($week) {
+            $evaluationsQuery->where('week_number', $week);
         }
 
-        $user = Auth::user();
-        $query = Evaluation::query();
-
-        // Check for week filter
-        if ($request->filled('week')) {
-            $query->where('week_number', $request->input('week'));
+        // Apply search filter if specified
+        if ($search) {
+            $evaluationsQuery->whereHas('matkul', function ($query) use ($search) {
+                $query->where('name', 'LIKE', "%$search%");
+            })->orWhereHas('lecturer', function ($query) use ($search) {
+                $query->where('name', 'LIKE', "%$search%");
+            });
         }
 
-        // Check for completion filter (for admin)
-        if ($request->has('completed')) {
-            $completedStatus = $request->input('completed') == 'true' ? true : false;
-            $query->where('completed', $completedStatus);
-        }
+        // Paginate the results
+        $evaluations = $evaluationsQuery->paginate(10);
 
-        // Clear any session data related to evaluations if needed
-        $request->session()->forget([
-            // Add session keys here if you need to clear specific ones
-        ]);
-
-        if ($user->group_id == 99) {
-            // Admin: retrieve all evaluations with related data
-            $evaluations = Evaluation::with(['lecturers', 'matkuls', 'users'])->paginate(10);
-        } else {
-            // Regular user: retrieve only evaluations tied to their user_id with related data
-            $evaluations = Evaluation::where('user_id', $user->id)
-                ->with(['lecturers', 'matkuls'])
-                ->paginate(10);
-        }
-
-        // Pass all the necessary data to the view
-        return view('admin.home', compact('evaluations', 'user'));
+        return view('admin.home', compact('evaluations', 'week', 'search'));
     }
+
+
+    public function showEvaluationGroups($matkul_id, $lecturer_id, $week)
+    {
+        // Retrieve groups with users who attended the selected matkul and lecturer in the given week
+        $groups = Group::with(['users' => function ($query) use ($matkul_id, $lecturer_id, $week) {
+            $query->whereHas('evaluations', function ($evaluationQuery) use ($matkul_id, $lecturer_id, $week) {
+                $evaluationQuery->where('matkul_id', $matkul_id)
+                                ->where('lecturer_id', $lecturer_id)
+                                ->where('week_number', $week);
+            });
+        }])->get();
+
+        return view('admin.evaluation_groups', compact('groups', 'matkul_id', 'lecturer_id', 'week'));
+    }
+
 
     public function search(Request $request)
     {
@@ -135,7 +141,7 @@ class AdminController extends Controller
     public function showEvaluationUsers($evaluation_id)
     {
         // Fetch the evaluation with its associated matkul and lecturer
-        $evaluation = Evaluation::with(['matkul', 'lecturer', 'users'])->findOrFail($evaluation_id);
+        $evaluation = Evaluation::with(['matkul', 'lecturer', 'user'])->findOrFail($evaluation_id);
 
         // Fetch users who haven't completed the evaluation
         $users = $evaluation->users()

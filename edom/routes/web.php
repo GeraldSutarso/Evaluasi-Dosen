@@ -31,6 +31,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Admin Home Route (GET request)
     Route::get('/admin/home', [AdminController::class, 'home'])->name('admin.home');
     Route::get('admin/evaluation/{evaluation_id}', [AdminController::class, 'showEvaluationUsers'])->name('admin.showEvaluationUsers');
+    Route::get('admin/evaluation/groups/{matkul_id}/{lecturer_id}/{week}', [AdminController::class, 'showEvaluationGroups'])->name('admin.evaluation.groups');
+    Route::get('admin/evaluation/group/{group_id}/users/{matkul_id}/{lecturer_id}/{week}', [AdminController::class, 'showGroupUsers'])->name('admin.evaluation.group.users');
+
 
     // Admin Search Route (GET request)
     Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');

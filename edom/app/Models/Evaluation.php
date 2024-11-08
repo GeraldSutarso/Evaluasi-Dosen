@@ -18,7 +18,7 @@ class Evaluation extends Model
     ];
     protected $table = 'evaluations';
 
-    public function student()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
@@ -33,7 +33,7 @@ class Evaluation extends Model
         return $this->belongsTo(Lecturer::class);
     }
 
-    public function responses()
+    public function response()
     {
         return $this->hasMany(Response::class);
     }

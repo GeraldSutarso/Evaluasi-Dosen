@@ -45,14 +45,14 @@ class HomeController extends Controller
             // Add session keys here if you need to clear specific ones
         ]);
 
-        if ($user->group_id == 99) {    
+        if ($user->group_id == 99) {
             // Admin: retrieve all evaluations with related data
-            $evaluations = Evaluation::with(['lecturers', 'matkuls', 'users'])->paginate(10); 
+            $evaluations = $query->with(['lecturer', 'matkul', 'user'])->paginate(10);
         } else {
-            // Regular user: retrieve only evaluations tied to their student ID with related data
-            $evaluations = Evaluation::where('user_id', $user->id)
-                                    ->with(['lecturers', 'matkuls'])
-                                    ->paginate(10); 
+            // Regular user: retrieve evaluations tied to their user ID
+            $evaluations = $query->where('user_id', $user->id)
+                ->with(['lecturer', 'matkul'])
+                ->paginate(10);
         }
 
         // Pass all the necessary data to the view

@@ -2,25 +2,13 @@
 
 @section('content')
 <div class="container mt-4">
-    @if (session('success'))
-        <div class="alert alert-success" role="alert">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if ($errors->any())
-    <div class="alert alert-danger">
-            @foreach ($errors->all() as $error)
-                {{ $error }}
-            @endforeach
-    </div>
-    @endif
 
     <div class="card">
         <div class="card-header">
             <!-- Search Form -->
-            <form action="{{ route('admin.search') }}" method="GET" class="float-end" style="max-width: 300px;">
+            <form action="{{ route('admin.home') }}" method="GET" class="float-end" style="max-width: 300px;">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search..." name="search">
+                    <input type="text" class="form-control" placeholder="Search Mata Kuliah or Lecturer" name="search" value="{{ request('search') }}">
                     <button class="btn btn-outline-secondary" type="submit" id="button-search">
                         Search
                     </button>
@@ -32,7 +20,7 @@
                 <div class="input-group">
                     <select name="week" class="form-select" onchange="this.form.submit()">
                         <option value="">Filter per Minggu</option>
-                        @for ($i = 1; $i <= 16; $i++) <!-- $i <= 16 adalah total week, 16 weeks, ganti seperlunya -->
+                        @for ($i = 10; $i <= 21; $i++) <!-- Adjust week range as needed -->
                             <option value="{{ $i }}" {{ request('week') == $i ? 'selected' : '' }}>Minggu ke-{{ $i }}</option>
                         @endfor
                     </select>
@@ -43,43 +31,21 @@
         <div class="card-body">
             <!-- Table -->
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
+                <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>No.</th>
                             <th>Mata Kuliah</th>
                             <th>Nama Dosen</th>
                             <th>Minggu Ke</th>
-                            <th>Status Evaluasi</th>
                         </tr>
                     </thead>
-                    
-                    @php
-                        $currentPage = $evaluations->currentPage();
-                        $perPage = $evaluations->perPage();
-                        $startingNumber = ($currentPage - 1) * $perPage + 1;
-                    @endphp
-                    
                     <tbody>
-                        @foreach($evaluations as $index => $evaluation)
-                            @php
-                                $usersNotCompleted = $evaluation->users()
-                                    ->where('matkul_id', $evaluation->matkul_id)
-                                    ->where('lecturer_id', $evaluation->lecturer_id)
-                                    ->where('week_number', $evaluation->week_number)
-                                    ->where('completed', false)
-                                    ->exists();
-                            @endphp
-                    
-                            <tr style="background-color: {{ $usersNotCompleted ? '#ffd1d1' : '#e2fade' }};" 
-                                onclick="window.location='{{ route('admin.showEvaluationUsers', ['evaluation_id' => $evaluation->id]) }}'">
-                                <td>{{ $startingNumber + $index }}</td>
+                        @foreach($evaluations as $evaluation)
+                            <tr onclick="window.location='{{ route('admin.evaluation.groups', ['matkul_id' => $evaluation->matkul_id, 'lecturer_id' => $evaluation->lecturer_id, 'week' => $evaluation->week_number]) }}'"
+                                style="cursor:pointer;">
                                 <td>{{ $evaluation->matkul->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->lecturer->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->week_number }}</td>
-                                <td>
-                                    {{ $usersNotCompleted ? 'Belum diisi' : 'Sudah diisi' }}
-                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -88,7 +54,7 @@
 
             <!-- Pagination Links -->
             <div class="d-flex justify-content-center">
-                {!! $evaluations->links() !!}
+                {!! $evaluations->appends(request()->query())->links() !!}
             </div>
         </div>
     </div>
