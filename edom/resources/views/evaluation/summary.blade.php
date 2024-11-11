@@ -24,16 +24,15 @@
 
     $grandTotal = 0;
 @endphp
-
-<table class="table table-bordered">
+<table class="table table-bordered border-dark">
     <thead>
-        <tr>
-            <th rowspan="2" class="text-center">No</th>
+        <tr class="bg-warning text-dark">
+            <th rowspan="2" class="text-center">No.</th>
             <th rowspan="2" class="text-center">Uraian Kinerja Dosen</th>
             <th colspan="5" class="text-center">Kriteria Penilaian</th>
             <th rowspan="2" class="text-center">Nilai Kecukupan</th>
         </tr>
-        <tr>
+        <tr class="bg-warning text-dark">
             <th class="text-center">1</th>
             <th class="text-center">2</th>
             <th class="text-center">3</th>
@@ -55,8 +54,10 @@
                 }
             @endphp
 
-            <tr class="table-secondary">
-                <td colspan="8" class="text-center"><strong>{{ strtoupper($section) }}</strong></td>
+            <!-- Section type row with background color and black border -->
+            <tr class="table-secondary border-dark">
+                <td class="text-center bg-warning text-dark border-dark"><strong>{{ $index++ }}</strong></td> <!-- Numbered row for KM, MP, etc. -->
+                <td colspan="7" class="text-center bg-warning text-dark border-dark"><strong>{{ strtoupper($section) }}</strong></td> <!-- Question type name without numbering -->
             </tr>
 
             @foreach ($data['questions'] as $questionId => $questionData)
@@ -84,8 +85,8 @@
                     $sectionAverages[] = $nilaiKecukupan;
                 @endphp
 
-                <tr>
-                    <td class="text-center">{{ $index++ }}</td>
+                <tr class="border-dark">
+                    <td class="text-center"></td> <!-- No number here for individual questions -->
                     <td>{{ $questionData['text'] }}</td>
                     <td class="text-center">{{ $questionData['counts'][1] ?? 0 }}</td>
                     <td class="text-center">{{ $questionData['counts'][2] ?? 0 }}</td>
@@ -97,7 +98,7 @@
             @endforeach
 
             <!-- Total per section (KM, MP, etc.) -->
-            <tr>
+            <tr class="bg-warning text-dark border-dark">
                 <td colspan="2" class="text-end"><strong>Total {{ strtoupper($section) }}</strong></td>
                 <td class="text-center"><strong>{{ $sectionTotals[$section][1] }}</strong></td>
                 <td class="text-center"><strong>{{ $sectionTotals[$section][2] }}</strong></td>
@@ -116,7 +117,7 @@
         @endforeach
 
         <!-- Total Hasil Row (Summing all sections) -->
-        <tr>
+        <tr class="bg-warning text-dark border-dark">
             <td colspan="2" class="text-end"><strong>Total Hasil</strong></td>
             <td class="text-center"><strong>{{ $totalCounts[1] }}</strong></td>
             <td class="text-center"><strong>{{ $totalCounts[2] }}</strong></td>
@@ -131,7 +132,7 @@
         </tr>
 
         <!-- Percentage Row -->
-        <tr>
+        <tr class="bg-warning text-dark border-dark">
             <td colspan="2" class="text-end"><strong>Percentage</strong></td>
             <td class="text-center">
                 <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[1] / $totalResponses) * 100, 2) : '0' }}%</strong>
@@ -150,4 +151,5 @@
         </tr>
     </tbody>
 </table>
+
 @endsection
