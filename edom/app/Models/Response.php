@@ -17,7 +17,7 @@ class Response extends Model
     protected $fillable = [
         'evaluation_id',
         'question_id',
-        'score',
+        'response_value',
     ];
     protected $primaryKey = 'id';
     // public $incrementing = false;

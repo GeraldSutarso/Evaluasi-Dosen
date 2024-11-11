@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\Evaluation;
 use App\Models\Question;
 use App\Models\Response;
+use App\Models\Matkul;
+use App\Models\Lecturer;
 use Illuminate\Http\RedirectResponse;
 
 class EvaluasiController extends Controller
@@ -39,31 +41,84 @@ class EvaluasiController extends Controller
             return redirect()->route('home')->withErrors(['error' => 'Unauthorized access.']);
         }
 
-        // Validate that each response has a value from 1 to 4
+        // Validate that responses are provided for each question
         $request->validate([
             'responses' => 'required|array',
-            'responses.*' => 'required|integer|min:1|max:4',
+            'responses.*' => 'required|in:1,2,3,4', // Ensures each response is between 1 and 4
         ]);
 
-        // Array of question_id => selected value
-        $responses = $request->input('responses');
+        // Get the evaluation based on the provided ID
+        $evaluation = Evaluation::findOrFail($evaluationId);
 
-        foreach ($responses as $questionId => $value) {
-            Response::updateOrCreate(
-                [
-                    'evaluation_id' => $evaluation->id,
-                    'question_id' => $questionId,
-                ],
-                [
-                    'answer' => $value,
-                ]
-            );
+        // Loop through each question's response and save it to the responses table
+        foreach ($request->responses as $questionId => $responseValue) {
+            Response::create([
+                'evaluation_id' => $evaluation->id,
+                'question_id' => $questionId,
+                'response_value' => $responseValue,
+            ]);
         }
 
-        // Mark the evaluation as complete
-        $evaluation->complete = true;
+        $evaluation->completed = true;
         $evaluation->save();
 
-        return redirect()->route('home')->withSuccess('Evaluation submitted successfully.');
+        // Redirect back with a success message
+        return redirect()->route('home')->with('success', 'Evaluasi berhasil');
+    
+
     }
+    public function calculateSummary($matkulId, $lecturerId)
+    {
+        $matkul = Matkul::find($matkulId);
+        $lecturer = Lecturer::find($lecturerId);
+
+        $responses = Response::whereHas('evaluation', function ($query) use ($matkulId, $lecturerId) {
+                $query->where('matkul_id', $matkulId)
+                    ->where('lecturer_id', $lecturerId);
+            })
+            ->with('question')
+            ->get();
+
+        $questions = Question::all();
+
+        $summary = [];
+        $sectionTotals = [];
+        $overallTotal = 0;
+
+        foreach ($questions as $question) {
+            $section = $question->type;
+            $questionId = $question->id;
+
+            if (!isset($summary[$section])) {
+                $summary[$section] = [
+                    'questions' => [],
+                    'sectionTotal' => 0,
+                ];
+            }
+
+            $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+            $totalScore = 0;
+
+            foreach ($responses->where('question_id', $questionId) as $response) {
+                $counts[$response->response_value]++;
+                $totalScore += $response->response_value;
+            }
+
+            $summary[$section]['questions'][$questionId] = [
+                'text' => $question->text,
+                'counts' => $counts,
+                'totalScore' => $totalScore,
+            ];
+
+            $summary[$section]['sectionTotal'] += $totalScore;
+        }
+
+        foreach ($summary as $section => $data) {
+            $sectionTotals[$section] = $data['sectionTotal'];
+            $overallTotal += $data['sectionTotal'];
+        }
+
+        return view('evaluation.summary', compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
+    }
+
 }

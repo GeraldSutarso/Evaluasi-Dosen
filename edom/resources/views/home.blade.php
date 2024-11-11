@@ -8,11 +8,11 @@
         </div>
     @endif
     @if ($errors->any())
-    <div class="alert alert-danger">
+        <div class="alert alert-danger">
             @foreach ($errors->all() as $error)
                 {{ $error }}
             @endforeach
-    </div>
+        </div>
     @endif
 
     <div class="card">
@@ -61,8 +61,14 @@
             
                     <tbody>
                         @foreach($evaluations as $index => $evaluation)
-                            <tr onclick="window.location='{{ route('evaluation.show', ['id' => $evaluation->id]) }}'"
-                                style="cursor:pointer; background-color: {{ $evaluation->completed ? '#e2fade' : '#ffd1d1' }};">
+                            <tr
+                                @if(!$evaluation->completed)
+                                    onclick="window.location='{{ route('evaluation.show', ['id' => $evaluation->id]) }}'"
+                                    style="cursor:pointer; background-color: #ffd1d1;"
+                                @else
+                                    style="background-color: #e2fade;"
+                                @endif
+                            >
                                 <td>{{ $startingNumber + $index }}</td>
                                 <td>{{ $evaluation->matkul->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->lecturer->name ?? 'N/A' }}</td>

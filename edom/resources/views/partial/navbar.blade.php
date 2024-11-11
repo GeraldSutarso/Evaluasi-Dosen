@@ -1,7 +1,7 @@
 @if(!isset($excludeNavbar))
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #992424">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/">
+    <a class="navbar-brand" href="#">
       <h4><img src="{{ asset('img/Logo (3295x1171).png') }}" style="width: 150px; height: auto;"></h4>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,13 +15,11 @@
           </li>
         @else
           <li class="nav-item">
-           <a class="nav-link text-light" href="{{ route('home') }}"><span><h5>Welcome, {{ auth()->user()->name }}</h5></span></a>
+            <a class="nav-link text-light" href="{{ auth()->user()->group_id == 99 ? route('admin.home') : route('home') }}">
+              <span><h5>Welcome, {{ auth()->user()->name }}</h5></span>
+            </a>
           </li>
-          <li class="nav-item">&nbsp;&nbsp;&nbsp;
-            {{-- <a class="nav-link" href="{{ route('home') }}">
-              <button id="home" class="btn btn-warning">Home</button>
-            </a> --}}
-          </li>
+          <li class="nav-item">&nbsp;&nbsp;&nbsp;</li>
           <li class="nav-item active">
             <a class="nav-link" href="{{ route('logout') }}">
               <button class="btn btn-danger"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">

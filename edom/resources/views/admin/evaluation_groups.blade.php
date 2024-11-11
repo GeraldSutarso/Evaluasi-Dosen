@@ -21,5 +21,12 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Button to view evaluation summary -->
+    <div class="mt-4 text-center">
+        <a href="{{ route('evaluation.summary', ['matkulId' => $matkul_id, 'lecturerId' => $lecturer_id]) }}" class="btn btn-primary">
+            Lihat Ringkasan Evaluasi
+        </a>
+    </div>
 </div>
 @endsection

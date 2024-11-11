@@ -22,10 +22,6 @@ Route::get('login', [AuthController::class, 'index'])->name('login');
 Route::post('post-login', [AuthController::class, 'postLogin'])->name('login.post'); 
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
-//Fallback
-Route::fallback(function () {
-    return redirect('/');
-});
 
 Route::middleware(['auth', 'admin'])->group(function () {
     // Admin Home Route (GET request)
@@ -37,6 +33,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Admin Search Route (GET request)
     Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');
+    //summary
+    Route::get('admin/evaluation/summary/{matkulId}/{lecturerId}', [EvaluasiController::class, 'calculateSummary'])
+    ->name('evaluation.summary');
+    //Fallback
+    Route::fallback(function () {
+        return redirect('/');
+    });
 
 });
 
