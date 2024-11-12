@@ -11,9 +11,9 @@
     </div>
     <div style="margin-bottom: 2px; text-align: left;">
         <p style="margin: 0; padding: 0;">Nama Dosen: {{ $lecturer->name }}</p>
-        <p style="margin: 0; padding: 0;">Program Studi: {{ $matkul->name }}</p>
+        <p style="margin: 0; padding: 0;">Mata Kuliah: {{ $matkul->name }}</p>
         {{-- ini juga ganti sesuai tahun ajaran --}}
-        <p style="margin: 0; padding: 0;">Tahun Ajaran: 2024/2025</p>
+        <p style="margin: 0; padding: 0;">Semester I Tahun Akademik 2024/2025</p>
     </div>
 
     @php
@@ -146,7 +146,7 @@
                     <strong>{{ $totalResponses > 0 ? number_format(($totalResponses / $totalResponses) * 100, 2) : '0' }}%</strong>
                 </td>
                 <td style="text-align: center;border: 1px solid #000;">
-                    <strong>{{ $totalResponses > 0 ? number_format(($totalScoreSum / $totalResponses), 2) : '0' }}</strong>
+                    <strong></strong>
                 </td>
             </tr>
         </tbody>                
