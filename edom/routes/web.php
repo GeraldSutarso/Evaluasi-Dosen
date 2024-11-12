@@ -29,6 +29,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('admin/evaluation/{evaluation_id}', [AdminController::class, 'showEvaluationUsers'])->name('admin.showEvaluationUsers');
     Route::get('admin/evaluation/groups/{matkul_id}/{lecturer_id}/{week}', [AdminController::class, 'showEvaluationGroups'])->name('admin.evaluation.groups');
     Route::get('admin/evaluation/group/{group_id}/users/{matkul_id}/{lecturer_id}/{week}', [AdminController::class, 'showGroupUsers'])->name('admin.evaluation.group.users');
+    //download PDF
+    Route::get('admin/evaluation/summary/{matkulId}/{lecturerId}/pdf', [EvaluasiController::class, 'downloadPDF'])->name('evaluation.summary.pdf');
 
 
     // Admin Search Route (GET request)

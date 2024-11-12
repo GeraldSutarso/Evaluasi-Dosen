@@ -1,155 +1,182 @@
 @extends('layout.main')
 
 @section('content')
-<div class="container mt-4">
-    <h2 class="mb-4">Evaluation Summary for Matkul and Lecturer</h2>
-
-    <div class="mb-4">
-        <h3>Matkul: {{ $matkul->name }}</h3>
-        <h3>Lecturer: {{ $lecturer->name }}</h3>
+<div class="pdf-content" style="width: 100%; margin-top: 1px; font-family: Arial, sans-serif; font-size: 10px;">
+    <div style="text-align: center; margin-bottom: 2px; font-weight: bold;">
+            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">TABULASI HASIL DATA EVALUASI DOSEN OLEH MAHASISWA</p>
+            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">AKADEMI KOMUNITAS TOYOTA INDONESIA</p>
+            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">PROGRAM STUDI TATA OPERASI KENDARAAN RODA 4</p>
+            {{-- ganti sesuai tahun ajaran --}}
+            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN 2024/2025</p>
+    </div>
+    <div style="margin-bottom: 2px; text-align: left;">
+        <p style="margin: 0; padding: 0;">Nama Dosen: {{ $lecturer->name }}</p>
+        <p style="margin: 0; padding: 0;">Program Studi: {{ $matkul->name }}</p>
+        {{-- ini juga ganti sesuai tahun ajaran --}}
+        <p style="margin: 0; padding: 0;">Tahun Ajaran: 2024/2025</p>
     </div>
 
     @php
-    $totalCounts = [1 => 0, 2 => 0, 3 => 0, 4 => 0]; // Total counts for each value (1-4) across all sections
-    $totalResponses = 0; // Total responses across all sections
-    $totalScoreSum = 0; // Total score sum across all sections for calculating Nilai Kecukupan
-    $sectionAverages = []; // To store Nilai Kecukupan for each section
-
-    // Prepare total variables per section (KM, MP, etc.)
+    $totalCounts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+    $totalResponses = 0;
+    $totalScoreSum = 0;
+    $sectionAverages = [];
     $sectionTotals = [
         'KESIAPAN MENGAJAR ( KM )' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'total' => 0],
         'MATERI PENGAJARAN ( MP )' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'total' => 0],
-        // Add other sections here as needed
+        'DISIPLIN MENGAJAR ( DM )' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'total' => 0],
+        'EVALUASI MENGAJAR ( EMJ )' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'total' => 0],
+        'KEPRIBADIAN DOSEN ( KD )' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'total' => 0],
     ];
-
     $grandTotal = 0;
-@endphp
-<table class="table table-bordered border-dark">
-    <thead>
-        <tr class="bg-warning text-dark">
-            <th rowspan="2" class="text-center">No.</th>
-            <th rowspan="2" class="text-center">Uraian Kinerja Dosen</th>
-            <th colspan="5" class="text-center">Kriteria Penilaian</th>
-            <th rowspan="2" class="text-center">Nilai Kecukupan</th>
-        </tr>
-        <tr class="bg-warning text-dark">
-            <th class="text-center">1</th>
-            <th class="text-center">2</th>
-            <th class="text-center">3</th>
-            <th class="text-center">4</th>
-            <th class="text-center">Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @php
-            $index = 1;
-            $sectionAverages = []; // Reset section averages array for calculation
-        @endphp
+    @endphp
 
-        @foreach ($summary as $section => $data)
-            @php
-                // Ensure the section exists in sectionTotals, otherwise initialize it
-                if (!isset($sectionTotals[$section])) {
-                    $sectionTotals[$section] = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'total' => 0];
-                }
-            @endphp
-
-            <!-- Section type row with background color and black border -->
-            <tr class="table-secondary border-dark">
-                <td class="text-center bg-warning text-dark border-dark"><strong>{{ $index++ }}</strong></td> <!-- Numbered row for KM, MP, etc. -->
-                <td colspan="7" class="text-center bg-warning text-dark border-dark"><strong>{{ strtoupper($section) }}</strong></td> <!-- Question type name without numbering -->
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+        <thead>
+            <tr style="background-color: #ffc404; color: #333; border: 1px solid #000;">
+                <th rowspan="2" style="width: 2%; text-align: center; vertical-align: middle; border: 1px solid #000;">No.</th>
+                <th rowspan="2" style="width: 60%; text-align: center; vertical-align: middle; border: 1px solid #000;">Uraian Kinerja Dosen</th>
+                <th colspan="5" style="text-align: center; vertical-align: middle; border: 1px solid #000;">Kriteria Penilaian</th>
+                <th rowspan="2" style="width: 10%; text-align: center; vertical-align: middle; border: 1px solid #000;">Nilai Kecukupan</th>
             </tr>
-
-            @foreach ($data['questions'] as $questionId => $questionData)
+            <tr style="background-color: #ffc404; color: #333; border: 1px solid #000;">
+                <th style="width: 4%; text-align: center; border: 1px solid #000;">1</th>
+                <th style="width: 4%; text-align: center; border: 1px solid #000;">2</th>
+                <th style="width: 4%; text-align: center; border: 1px solid #000;">3</th>
+                <th style="width: 4%; text-align: center; border: 1px solid #000;">4</th>
+                <th style="width: 5%; text-align: center; border: 1px solid #000;">Total</th> <!-- Reduced width of 'Total' column -->
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $index = 1;
+                $sectionAverages = [];
+            @endphp
+        
+            @foreach ($summary as $section => $data)
                 @php
-                    $totalResponsesForQuestion = array_sum($questionData['counts']);
-                    $nilaiKecukupan = $totalResponsesForQuestion > 0
-                        ? (($questionData['counts'][1] ?? 0) * 1 + ($questionData['counts'][2] ?? 0) * 2 + ($questionData['counts'][3] ?? 0) * 3 + ($questionData['counts'][4] ?? 0) * 4) / $totalResponsesForQuestion
-                        : 0;
-
-                    // Update section totals for each response value (1-4)
-                    foreach ([1, 2, 3, 4] as $value) {
-                        $sectionTotals[$section][$value] += $questionData['counts'][$value] ?? 0;
+                    if (!isset($sectionTotals[$section])) {
+                        $sectionTotals[$section] = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'total' => 0];
                     }
-                    $sectionTotals[$section]['total'] += $totalResponsesForQuestion;
-
-                    // Update global counts
-                    foreach ([1, 2, 3, 4] as $value) {
-                        $totalCounts[$value] += $questionData['counts'][$value] ?? 0;
-                    }
-
-                    $totalResponses += $totalResponsesForQuestion;
-                    $totalScoreSum += $nilaiKecukupan * $totalResponsesForQuestion;
-
-                    // Store the Nilai Kecukupan for averaging later
-                    $sectionAverages[] = $nilaiKecukupan;
                 @endphp
-
-                <tr class="border-dark">
-                    <td class="text-center"></td> <!-- No number here for individual questions -->
-                    <td>{{ $questionData['text'] }}</td>
-                    <td class="text-center">{{ $questionData['counts'][1] ?? 0 }}</td>
-                    <td class="text-center">{{ $questionData['counts'][2] ?? 0 }}</td>
-                    <td class="text-center">{{ $questionData['counts'][3] ?? 0 }}</td>
-                    <td class="text-center">{{ $questionData['counts'][4] ?? 0 }}</td>
-                    <td class="text-center">{{ $totalResponsesForQuestion }}</td>
-                    <td class="text-center">{{ number_format($nilaiKecukupan, 2) }}</td>
+        
+                <!-- Section Header Row -->
+                <tr style="background-color: #ffc404; border: 1px solid #000;">
+                    <td style="text-align: center; vertical-align: middle; border: 1px solid #000;"><strong>{{ $index++ }}</strong></td>
+                    <td colspan="7" style="text-align: center; vertical-align: middle; border: 1px solid #000;"><strong>{{ strtoupper($section) }}</strong></td>
+                </tr>
+        
+                @foreach ($data['questions'] as $questionId => $questionData)
+                    @php
+                        $totalResponsesForQuestion = array_sum($questionData['counts']);
+                        $nilaiKecukupan = $totalResponsesForQuestion > 0
+                            ? (($questionData['counts'][1] ?? 0) * 1 + ($questionData['counts'][2] ?? 0) * 2 + ($questionData['counts'][3] ?? 0) * 3 + ($questionData['counts'][4] ?? 0) * 4) / $totalResponsesForQuestion
+                            : 0;
+        
+                        foreach ([1, 2, 3, 4] as $value) {
+                            $sectionTotals[$section][$value] += $questionData['counts'][$value] ?? 0;
+                        }
+                        $sectionTotals[$section]['total'] += $totalResponsesForQuestion;
+        
+                        foreach ([1, 2, 3, 4] as $value) {
+                            $totalCounts[$value] += $questionData['counts'][$value] ?? 0;
+                        }
+        
+                        $totalResponses += $totalResponsesForQuestion;
+                        $totalScoreSum += $nilaiKecukupan * $totalResponsesForQuestion;
+                        $sectionAverages[] = $nilaiKecukupan;
+                    @endphp
+        
+                    <tr style="border: 1px solid #000;">
+                        <td style="text-align: center; border: 1px solid #000;"></td>
+                        <td>{{ $questionData['text'] }}</td>
+                        <td style="text-align: center; border: 1px solid #000;">{{ $questionData['counts'][1] ?? 0 }}</td>
+                        <td style="text-align: center; border: 1px solid #000;">{{ $questionData['counts'][2] ?? 0 }}</td>
+                        <td style="text-align: center; border: 1px solid #000;">{{ $questionData['counts'][3] ?? 0 }}</td>
+                        <td style="text-align: center; border: 1px solid #000;">{{ $questionData['counts'][4] ?? 0 }}</td>
+                        <td style="text-align: center; border: 1px solid #000;">{{ $totalResponsesForQuestion }}</td>
+                        <td style="text-align: center; border: 1px solid #000;">
+                            {{ number_format($nilaiKecukupan, 2) }}
+                        </td>
+                    </tr>
+                @endforeach
+        
+                <!-- Section Total Row -->
+                <tr style=" border: 1px solid #000;">
+                    <td colspan="2" style="text-align: center; border: 1px solid #000;"><strong>Total {{ strtoupper($section) }}</strong></td>
+                    <td style="text-align: center; border: 1px solid #000;"><strong>{{ $sectionTotals[$section][1] }}</strong></td>
+                    <td style="text-align: center; border: 1px solid #000;"><strong>{{ $sectionTotals[$section][2] }}</strong></td>
+                    <td style="text-align: center; border: 1px solid #000;"><strong>{{ $sectionTotals[$section][3] }}</strong></td>
+                    <td style="text-align: center; border: 1px solid #000;"><strong>{{ $sectionTotals[$section][4] }}</strong></td>
+                    <td style="text-align: center; border: 1px solid #000;"><strong>{{ $sectionTotals[$section]['total'] }}</strong></td>
+                    <td style="text-align: center; border: 1px solid #000;">
+                        <strong>{{ number_format((($sectionTotals[$section][1] * 1) + ($sectionTotals[$section][2] * 2) + ($sectionTotals[$section][3] * 3) + ($sectionTotals[$section][4] * 4)) / $sectionTotals[$section]['total'], 2) }}</strong>
+                    </td>
                 </tr>
             @endforeach
-
-            <!-- Total per section (KM, MP, etc.) -->
-            <tr class="bg-warning text-dark border-dark">
-                <td colspan="2" class="text-end"><strong>Total {{ strtoupper($section) }}</strong></td>
-                <td class="text-center"><strong>{{ $sectionTotals[$section][1] }}</strong></td>
-                <td class="text-center"><strong>{{ $sectionTotals[$section][2] }}</strong></td>
-                <td class="text-center"><strong>{{ $sectionTotals[$section][3] }}</strong></td>
-                <td class="text-center"><strong>{{ $sectionTotals[$section][4] }}</strong></td>
-                <td class="text-center"><strong>{{ $sectionTotals[$section]['total'] }}</strong></td>
-                <td class="text-center">
-                    <strong>
-                        {{ $sectionTotals[$section]['total'] > 0 ? number_format(
-                            (($sectionTotals[$section][1] * 1) + ($sectionTotals[$section][2] * 2) + ($sectionTotals[$section][3] * 3) + ($sectionTotals[$section][4] * 4)) / $sectionTotals[$section]['total'],
-                            2
-                        ) : '-' }}
-                    </strong>
+        
+            <!-- Grand Total Row -->
+            <tr style="background-color: #ffc404; border: 1px solid #000;">
+                <td colspan="2" style="text-align: center; border: 1px solid #000;"><strong>TOTAL HASIL</strong></td>
+                <td style="text-align: center; border: 1px solid #000;"><strong>{{ $totalCounts[1] }}</strong></td>
+                <td style="text-align: center; border: 1px solid #000;"><strong>{{ $totalCounts[2] }}</strong></td>
+                <td style="text-align: center; border: 1px solid #000;"><strong>{{ $totalCounts[3] }}</strong></td>
+                <td style="text-align: center; border: 1px solid #000;"><strong>{{ $totalCounts[4] }}</strong></td>
+                <td style="text-align: center; border: 1px solid #000;"><strong>{{ $totalResponses }}</strong></td>
+                <td style="text-align: center; border: 1px solid #000;">
+                    <strong>{{ number_format($totalScoreSum / $totalResponses, 2) }}</strong>
                 </td>
             </tr>
-        @endforeach
-
-        <!-- Total Hasil Row (Summing all sections) -->
-        <tr class="bg-warning text-dark border-dark">
-            <td colspan="2" class="text-end"><strong>Total Hasil</strong></td>
-            <td class="text-center"><strong>{{ $totalCounts[1] }}</strong></td>
-            <td class="text-center"><strong>{{ $totalCounts[2] }}</strong></td>
-            <td class="text-center"><strong>{{ $totalCounts[3] }}</strong></td>
-            <td class="text-center"><strong>{{ $totalCounts[4] }}</strong></td>
-            <td class="text-center"><strong>{{ $totalResponses }}</strong></td>
-            <td class="text-center">
-                <strong>
-                    {{ $totalResponses > 0 ? number_format($totalScoreSum / $totalResponses, 2) : '-' }}
-                </strong>
-            </td>
-        </tr>
-
-        <!-- Percentage Row -->
-        <tr class="bg-warning text-dark border-dark">
-            <td colspan="2" class="text-end"><strong>Percentage</strong></td>
-            <td class="text-center">
-                <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[1] / $totalResponses) * 100, 2) : '0' }}%</strong>
-            </td>
-            <td class="text-center">
-                <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[2] / $totalResponses) * 100, 2) : '0' }}%</strong>
-            </td>
-            <td class="text-center">
-                <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[3] / $totalResponses) * 100, 2) : '0' }}%</strong>
-            </td>
-            <td class="text-center">
-                <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[4] / $totalResponses) * 100, 2) : '0' }}%</strong>
-            </td>
-            <td class="text-center"><strong>100%</strong></td>
-            <td class="text-center"></td>
-        </tr>
-    </tbody>
-</table>
-
+            <!-- Percentage Row -->
+            <tr style="background-color: #ffc404; color: #333; border: 1px solid #000;">
+                <td colspan="2" style="text-align: center;border: 1px solid #000;"><strong>PRESENTASI PENILAIAN</strong></td>
+                <td style="text-align: center;border: 1px solid #000;">
+                    <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[1] / $totalResponses) * 100, 2) : '0' }}%</strong>
+                </td>
+                <td style="text-align: center;border: 1px solid #000;">
+                    <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[2] / $totalResponses) * 100, 2) : '0' }}%</strong>
+                </td>
+                <td style="text-align: center;border: 1px solid #000;">
+                    <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[3] / $totalResponses) * 100, 2) : '0' }}%</strong>
+                </td>
+                <td style="text-align: center;border: 1px solid #000;">
+                    <strong>{{ $totalResponses > 0 ? number_format(($totalCounts[4] / $totalResponses) * 100, 2) : '0' }}%</strong>
+                </td>
+                <td style="text-align: center;border: 1px solid #000;">
+                    <strong>{{ $totalResponses > 0 ? number_format(($totalResponses / $totalResponses) * 100, 2) : '0' }}%</strong>
+                </td>
+                <td style="text-align: center;border: 1px solid #000;">
+                    <strong>{{ $totalResponses > 0 ? number_format(($totalScoreSum / $totalResponses), 2) : '0' }}</strong>
+                </td>
+            </tr>
+        </tbody>                
+    </table>
+    {{-- tanda tangan --}}
+    <table style="width: 100%; border-collapse: collapse;">
+        <tbody>
+            <tr>
+                <td style="width:50%;text-align: center; vertical-align: middle;">
+                    <p>Mengetahui,<br>Wakil Direktur I</p>
+                    <br>
+                    <br>
+                    <p style="text-align: center;"><u><b>Sudibyo Agus</b></u></p>
+                </td>
+                <td style="width:50%;text-align: center; vertical-align: middle;">
+                    <p>Ketua Program Studi</p>
+                    <br>
+                    <br>
+                    <p style="text-align: center;"><b><u>Muhammad Julliarto</u></b></p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+@if (empty($isPdf))
+    <div style="text-align: right; margin-bottom: 20px;">
+        <!-- Button to download the PDF -->
+        <a class="btn btn-primary" href="{{ route('evaluation.summary.pdf', ['matkulId' => $matkul->id, 'lecturerId' => $lecturer->id]) }}" class="btn btn-primary">
+            Download PDF
+        </a>
+    </div>
+@endif
 @endsection

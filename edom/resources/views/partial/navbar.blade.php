@@ -1,4 +1,4 @@
-@if(!isset($excludeNavbar))
+@if (empty($isPdf))
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #992424">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">
