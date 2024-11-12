@@ -3,11 +3,11 @@
 @section('content')
 <div class="pdf-content" style="width: 100%; margin-top: 1px; font-family: Arial, sans-serif; font-size: 10px;">
     <div style="text-align: center; margin-bottom: 2px; font-weight: bold;">
-            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">TABULASI HASIL DATA EVALUASI DOSEN OLEH MAHASISWA</p>
-            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">AKADEMI KOMUNITAS TOYOTA INDONESIA</p>
-            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">PROGRAM STUDI TATA OPERASI KENDARAAN RODA 4</p>
+            <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TABULASI HASIL DATA EVALUASI DOSEN OLEH MAHASISWA</p>
+            <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">AKADEMI KOMUNITAS TOYOTA INDONESIA</p>
+            <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">PROGRAM STUDI TATA OPERASI KENDARAAN RODA 4</p>
             {{-- ganti sesuai tahun ajaran --}}
-            <p style="font-size: 14px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN 2024/2025</p>
+            <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN 2024/2025</p>
     </div>
     <div style="margin-bottom: 2px; text-align: left;">
         <p style="margin: 0; padding: 0;">Nama Dosen: {{ $lecturer->name }}</p>
@@ -151,21 +151,25 @@
             </tr>
         </tbody>                
     </table>
+    {{-- Keterangan --}}
+    <div style = "margin-top: 1px; margin-bottom: 2px">
+        <p style="margin: 0; padding: 0;">Keterangan: 1 = Tidak Setuju &nbsp;&nbsp;&nbsp; 2 = Kurang Setuju &nbsp;&nbsp;&nbsp; 3 = Cukup Setuju &nbsp;&nbsp;&nbsp; 4 = Sangat Setuju</p>
+    </div>
     {{-- tanda tangan --}}
     <table style="width: 100%; border-collapse: collapse;">
         <tbody>
             <tr>
                 <td style="width:50%;text-align: center; vertical-align: middle;">
-                    <p>Mengetahui,<br>Wakil Direktur I</p>
+                    <p>Mengetahui,<br>Wakil Direktur II</p>
                     <br>
                     <br>
-                    <p style="text-align: center;"><u><b>Sudibyo Agus</b></u></p>
+                    <p style="margin-bottom:0px;text-align: center;"><u><b>Mursyid</b></u></p>
                 </td>
                 <td style="width:50%;text-align: center; vertical-align: middle;">
                     <p>Ketua Program Studi</p>
                     <br>
                     <br>
-                    <p style="text-align: center;"><b><u>Muhammad Julliarto</u></b></p>
+                    <p style="text-align: center;"><b><u>Praditya Alambara</u></b></p>
                 </td>
             </tr>
         </tbody>
