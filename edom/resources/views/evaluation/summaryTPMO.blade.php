@@ -9,7 +9,7 @@
             <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TABULASI HASIL DATA EVALUASI INSTRUKTUR OLEH MAHASISWA</p>
         @endif
         <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">AKADEMI KOMUNITAS TOYOTA INDONESIA</p>
-        <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">PROGRAM STUDI TEKNIK PEMELIHARAAN MESIN OTOMASI DAN TATA OPERASI KENDARAAN RODA 4</p>
+        <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">PROGRAM STUDI TEKNIK PEMELIHARAAN MESIN OTOMASI</p>
         {{-- ganti sesuai tahun ajaran --}}
         <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN 2024/2025</p>
     </div>
@@ -119,7 +119,7 @@
                     <td style="text-align: center; border: 1px solid #000;"><strong>{{ $sectionTotals[$section][4] }}</strong></td>
                     <td style="text-align: center; border: 1px solid #000;"><strong>{{ $sectionTotals[$section]['total'] }}</strong></td>
                     <td style="text-align: center; border: 1px solid #000;">
-                        <strong>{{ number_format((($sectionTotals[$section][1] * 1) + ($sectionTotals[$section][2] * 2) + ($sectionTotals[$section][3] * 3) + ($sectionTotals[$section][4] * 4)) / $sectionTotals[$section]['total'], 2) }}</strong>
+                        <strong>{{ $sectionTotals[$section]['total'] > 0 ? number_format((($sectionTotals[$section][1] * 1) + ($sectionTotals[$section][2] * 2) + ($sectionTotals[$section][3] * 3) + ($sectionTotals[$section][4] * 4)) / $sectionTotals[$section]['total'], 2): '-' }}</strong>
                     </td>
                 </tr>
             @endforeach
@@ -133,7 +133,7 @@
                 <td style="text-align: center; border: 1px solid #000;"><strong>{{ $totalCounts[4] }}</strong></td>
                 <td style="text-align: center; border: 1px solid #000;"><strong>{{ $totalResponses }}</strong></td>
                 <td style="text-align: center; border: 1px solid #000;">
-                    <strong>{{ number_format($totalScoreSum / $totalResponses, 2) }}</strong>
+                    <strong>{{ $totalResponses >0 ? number_format($totalScoreSum / $totalResponses, 2): '-' }}</strong>
                 </td>
             </tr>
             <!-- Percentage Row -->
@@ -176,7 +176,7 @@
                     <p style="margin-bottom:0px;text-align: center;"><u><b>Mursyid</b></u></p>
                 </td>
                 <td style="width:50%;text-align: center; vertical-align: middle;">
-                    <p>Ketua Program Studi</p>
+                    <p><br>Ketua Program Studi</p>
                     <br>
                     <br>
                     <p style="text-align: center;"><b><u>Praditya Alambara</u></b></p>
@@ -188,7 +188,7 @@
 @if (empty($isPdf))
 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
     <a class="btn btn-danger" href="{{ URL::previous() }}">Kembali</a>
-    <a class="btn btn-primary" href="{{ route('evaluation.summary.pdf', ['matkulId' => $matkul->id, 'lecturerId' => $lecturer->id]) }}">Download PDF</a>
+    <a class="btn btn-primary" href="{{ route('evaluation.summaryTPMO.pdf', ['matkulId' => $matkul->id, 'lecturerId' => $lecturer->id]) }}">Download PDF</a>
 </div>
 @endif
 @endsection

@@ -22,7 +22,7 @@
                 <div class="input-group">
                     <select name="week" class="form-select" onchange="this.form.submit()">
                         <option value="">Filter per Minggu</option>
-                        @for ($i = 10; $i <= 21; $i++) <!-- Adjust week range as needed -->
+                        @for ($i = 1; $i <= 21; $i++) <!-- Adjust week range as needed -->
                             <option value="{{ $i }}" {{ request('week') == $i ? 'selected' : '' }}>Minggu ke-{{ $i }}</option>
                         @endfor
                     </select>
@@ -37,16 +37,18 @@
                     <thead>
                         <tr>
                             <th>Mata Kuliah</th>
-                            <th>Nama Dosen</th>
+                            <th>Nama Pengajar</th>
+                            <th>Tipe Pengajar</th>
                             <th>Minggu Ke</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($evaluations as $evaluation)
-                            <tr onclick="window.location='{{ route('admin.evaluation.groups', ['matkul_id' => $evaluation->matkul_id, 'lecturer_id' => $evaluation->lecturer_id, 'week' => $evaluation->week_number]) }}'"
+                            <tr onclick="window.location='{{ route('admin.evaluation.groups', ['matkul_id' => $evaluation->matkul_id, 'lecturer_id' => $evaluation->lecturer_id]) }}'"
                                 style="cursor:pointer;">
                                 <td>{{ $evaluation->matkul->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->lecturer->name ?? 'N/A' }}</td>
+                                <td>@if($evaluation->lecturer->type == 1)Dosen @else Instruktur @endif</td>
                                 <td>{{ $evaluation->week_number }}</td>
                             </tr>
                         @endforeach

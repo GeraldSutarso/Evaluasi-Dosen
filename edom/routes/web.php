@@ -27,17 +27,23 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Admin Home Route (GET request)
     Route::get('/admin/home', [AdminController::class, 'home'])->name('admin.home');
     Route::get('admin/evaluation/{evaluation_id}', [AdminController::class, 'showEvaluationUsers'])->name('admin.showEvaluationUsers');
-    Route::get('admin/evaluation/groups/{matkul_id}/{lecturer_id}/{week}', [AdminController::class, 'showEvaluationGroups'])->name('admin.evaluation.groups');
-    Route::get('admin/evaluation/group/{group_id}/users/{matkul_id}/{lecturer_id}/{week}', [AdminController::class, 'showGroupUsers'])->name('admin.evaluation.group.users');
+    Route::get('admin/evaluation/groups/{matkul_id}/{lecturer_id}', [AdminController::class, 'showEvaluationGroups'])->name('admin.evaluation.groups');
+    Route::get('admin/evaluation/group/{group_id}/users/{matkul_id}/{lecturer_id}', [AdminController::class, 'showGroupUsers'])->name('admin.evaluation.group.users');
     //download PDF
     Route::get('admin/evaluation/summary/{matkulId}/{lecturerId}/pdf', [EvaluasiController::class, 'downloadPDF'])->name('evaluation.summary.pdf');
-
-
+    Route::get('admin/evaluation/summary/TPMO/{matkulId}/{lecturerId}/pdf', [EvaluasiController::class, 'downloadTPMO'])->name('evaluation.summaryTPMO.pdf');
+    Route::get('admin/evaluation/summary/TOPKR/{matkulId}/{lecturerId}/pdf', [EvaluasiController::class, 'downloadTOPKR'])->name('evaluation.summaryTOPKR.pdf');
     // Admin Search Route (GET request)
     Route::get('/admin/search', [AdminController::class, 'search'])->name('admin.search');
     //summary
     Route::get('admin/evaluation/summary/{matkulId}/{lecturerId}', [EvaluasiController::class, 'calculateSummary'])
     ->name('evaluation.summary');
+    //summary TPMO
+    Route::get('admin/evaluation/summary/TPMO/{matkulId}/{lecturerId}', [EvaluasiController::class, 'calculateSummaryTPMO'])
+    ->name('evaluation.summaryTPMO');
+    //summary TOPKR
+    Route::get('admin/evaluation/summary/TOPKR/{matkulId}/{lecturerId}', [EvaluasiController::class, 'calculateSummaryTOPKR'])
+    ->name('evaluation.summaryTOPKR');
     //Fallback
     Route::fallback(function () {
         return redirect('/');

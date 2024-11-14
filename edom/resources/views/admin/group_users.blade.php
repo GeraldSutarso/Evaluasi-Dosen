@@ -25,5 +25,8 @@
             </tbody>
         </table>
     </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <a class="btn btn-danger" href="{{ URL::previous() }}">Kembali</a>
+    </div>
 </div>
 @endsection

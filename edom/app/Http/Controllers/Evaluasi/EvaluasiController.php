@@ -111,7 +111,7 @@ class EvaluasiController extends Controller
         $dompdf->render();
 
         // Generate the filename using the lecturer and matkul names
-        $filename = "Tabulasi EDOM {$lecturer->name}-{$matkul->name}.pdf";
+        $filename = "Tabulasi EDOM/EOM {$lecturer->name}-{$matkul->name}.pdf";
 
         // Stream the generated PDF with the custom filename
         return $dompdf->stream($filename);
@@ -233,5 +233,260 @@ class EvaluasiController extends Controller
 
         return view('evaluation.summary', compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
     }
+
+    public function calculateSummaryTPMO($matkulId, $lecturerId)
+    {
+        $matkul = Matkul::find($matkulId);
+        $lecturer = Lecturer::find($lecturerId);
+
+        // Retrieve responses specifically for group IDs 1 and 2
+        $responses = Response::whereHas('evaluation', function ($query) use ($matkulId, $lecturerId) {
+                $query->where('matkul_id', $matkulId)
+                    ->where('lecturer_id', $lecturerId)
+                    ->whereHas('user', function ($query) {
+                        $query->whereIn('group_id', [1, 2]);
+                    });
+            })
+            ->with('question')
+            ->get();
+
+        $questions = Question::all();
+
+        $summary = [];
+        $sectionTotals = [];
+        $overallTotal = 0;
+
+        foreach ($questions as $question) {
+            $section = $question->type;
+            $questionId = $question->id;
+
+            if (!isset($summary[$section])) {
+                $summary[$section] = [
+                    'questions' => [],
+                    'sectionTotal' => 0,
+                ];
+            }
+
+            $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+            $totalScore = 0;
+
+            foreach ($responses->where('question_id', $questionId) as $response) {
+                $counts[$response->response_value]++;
+                $totalScore += $response->response_value;
+            }
+
+            $summary[$section]['questions'][$questionId] = [
+                'text' => $question->text,
+                'counts' => $counts,
+                'totalScore' => $totalScore,
+            ];
+
+            $summary[$section]['sectionTotal'] += $totalScore;
+        }
+
+        foreach ($summary as $section => $data) {
+            $sectionTotals[$section] = $data['sectionTotal'];
+            $overallTotal += $data['sectionTotal'];
+        }
+
+        return view('evaluation.summaryTPMO', compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
+    }
+    public function calculateSummaryTOPKR($matkulId, $lecturerId)
+    {
+        $matkul = Matkul::find($matkulId);
+        $lecturer = Lecturer::find($lecturerId);
+
+        // Retrieve responses specifically for group IDs 3 to 8
+        $responses = Response::whereHas('evaluation', function ($query) use ($matkulId, $lecturerId) {
+                $query->where('matkul_id', $matkulId)
+                    ->where('lecturer_id', $lecturerId)
+                    ->whereHas('user', function ($query) {
+                        $query->whereIn('group_id', [3, 4, 5, 6, 7, 8]);
+                    });
+            })
+            ->with('question')
+            ->get();
+
+        $questions = Question::all();
+
+        $summary = [];
+        $sectionTotals = [];
+        $overallTotal = 0;
+
+        foreach ($questions as $question) {
+            $section = $question->type;
+            $questionId = $question->id;
+
+            if (!isset($summary[$section])) {
+                $summary[$section] = [
+                    'questions' => [],
+                    'sectionTotal' => 0,
+                ];
+            }
+
+            $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+            $totalScore = 0;
+
+            foreach ($responses->where('question_id', $questionId) as $response) {
+                $counts[$response->response_value]++;
+                $totalScore += $response->response_value;
+            }
+
+            $summary[$section]['questions'][$questionId] = [
+                'text' => $question->text,
+                'counts' => $counts,
+                'totalScore' => $totalScore,
+            ];
+
+            $summary[$section]['sectionTotal'] += $totalScore;
+        }
+
+        foreach ($summary as $section => $data) {
+            $sectionTotals[$section] = $data['sectionTotal'];
+            $overallTotal += $data['sectionTotal'];
+        }
+
+        return view('evaluation.summaryTOPKR', compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
+    }
+    public function downloadTPMO($matkulId, $lecturerId)
+    {
+        // Fetch the summary data specifically for group IDs 1 and 2
+        $summaryData = $this->getTPMOdata($matkulId, $lecturerId);
+        
+        $lecturer = Lecturer::find($lecturerId);
+        $matkul = Matkul::find($matkulId);
+    
+        if (!$lecturer || !$matkul) {
+            abort(404, 'Lecturer or Matkul not found');
+        }
+    
+        $summaryData['lecturerName'] = $lecturer->name;
+        $summaryData['matkulName'] = $matkul->name;
+        $summaryData['isPdf'] = true;
+    
+        $html = view('evaluation.summaryTPMO', $summaryData)->render();
+    
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $dompdf = new Dompdf($options);
+    
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    
+        $filename = "Tabulasi EDOM-EOM TPMO {$lecturer->name}-{$matkul->name}.pdf";
+        return $dompdf->stream($filename);
+    }
+    
+    public function downloadTOPKR($matkulId, $lecturerId)
+    {
+        // Fetch the summary data specifically for group IDs 3 to 8
+        $summaryData = $this->getTOPKRdata($matkulId, $lecturerId);
+    
+        $lecturer = Lecturer::find($lecturerId);
+        $matkul = Matkul::find($matkulId);
+    
+        if (!$lecturer || !$matkul) {
+            abort(404, 'Lecturer or Matkul not found');
+        }
+    
+        $summaryData['lecturerName'] = $lecturer->name;
+        $summaryData['matkulName'] = $matkul->name;
+        $summaryData['isPdf'] = true;
+    
+        $html = view('evaluation.summaryTOPKR', $summaryData)->render();
+    
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $dompdf = new Dompdf($options);
+    
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    
+        $filename = "Tabulasi EDOM-EOM TOPKR {$lecturer->name}-{$matkul->name}.pdf";
+        return $dompdf->stream($filename);
+    }
+    public function getTPMOdata($matkulId, $lecturerId)
+    {
+        $matkul = Matkul::find($matkulId);
+        $lecturer = Lecturer::find($lecturerId);
+
+        $responses = Response::whereHas('evaluation', function ($query) use ($matkulId, $lecturerId) {
+                $query->where('matkul_id', $matkulId)
+                    ->where('lecturer_id', $lecturerId)
+                    ->whereHas('user', function ($query) {
+                        $query->whereIn('group_id', [1, 2]);
+                    });
+            })
+            ->with('question')
+            ->get();
+
+        return $this->processSummaryData($matkul, $lecturer, $responses);
+    }
+
+    public function getTOPKRdata($matkulId, $lecturerId)
+    {
+        $matkul = Matkul::find($matkulId);
+        $lecturer = Lecturer::find($lecturerId);
+
+        $responses = Response::whereHas('evaluation', function ($query) use ($matkulId, $lecturerId) {
+                $query->where('matkul_id', $matkulId)
+                    ->where('lecturer_id', $lecturerId)
+                    ->whereHas('user', function ($query) {
+                        $query->whereIn('group_id', [3, 4, 5, 6, 7, 8]);
+                    });
+            })
+            ->with('question')
+            ->get();
+
+        return $this->processSummaryData($matkul, $lecturer, $responses);
+    }
+    protected function processSummaryData($matkul, $lecturer, $responses)
+    {
+        $questions = Question::all();
+
+        $summary = [];
+        $sectionTotals = [];
+        $overallTotal = 0;
+
+        foreach ($questions as $question) {
+            $section = $question->type;
+            $questionId = $question->id;
+
+            if (!isset($summary[$section])) {
+                $summary[$section] = [
+                    'questions' => [],
+                    'sectionTotal' => 0,
+                ];
+            }
+
+            $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+            $totalScore = 0;
+
+            foreach ($responses->where('question_id', $questionId) as $response) {
+                $counts[$response->response_value]++;
+                $totalScore += $response->response_value;
+            }
+
+            $summary[$section]['questions'][$questionId] = [
+                'text' => $question->text,
+                'counts' => $counts,
+                'totalScore' => $totalScore,
+            ];
+
+            $summary[$section]['sectionTotal'] += $totalScore;
+        }
+
+        foreach ($summary as $section => $data) {
+            $sectionTotals[$section] = $data['sectionTotal'];
+            $overallTotal += $data['sectionTotal'];
+        }
+
+        return compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal');
+    }
+
 
 }

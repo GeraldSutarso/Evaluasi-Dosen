@@ -34,7 +34,7 @@
                 <div class="input-group">
                     <select name="week" class="form-select" onchange="this.form.submit()">
                         <option value="">Filter per Minggu</option>
-                        @for ($i = 10; $i <= 21; $i++) <!-- $i <= 16 adalah total week, 16 weeks, ganti seperlunya -->
+                        @for ($i = 1; $i <= 21; $i++) <!-- $i <= 16 adalah total week, 16 weeks, ganti seperlunya -->
                             <option value="{{ $i }}" {{ request('week') == $i ? 'selected' : '' }}>Minggu ke-{{ $i }}</option>
                         @endfor
                     </select>
@@ -50,7 +50,8 @@
                         <tr>
                             <th>No.</th>
                             <th>Mata Kuliah</th>
-                            <th>Nama Dosen</th>
+                            <th>Nama Pengajar</th>
+                            <th>Tipe Pengajar</th>
                             <th>Status Evaluasi</th>
                             <th>Minggu Ke</th>
                         </tr>
@@ -74,6 +75,7 @@
                                 <td>{{ $startingNumber + $index }}</td>
                                 <td>{{ $evaluation->matkul->name ?? 'N/A' }}</td>
                                 <td>{{ $evaluation->lecturer->name ?? 'N/A' }}</td>
+                                <td>@if($evaluation->lecturer->type == 1)Dosen @else Instruktur @endif</td>
                                 <td>{{ $evaluation->completed ? 'Sudah diisi' : 'Belum diisi' }}</td>
                                 <td>{{ $evaluation->week_number }}</td>
                             </tr>
