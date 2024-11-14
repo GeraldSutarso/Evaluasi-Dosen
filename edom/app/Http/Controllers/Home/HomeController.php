@@ -24,94 +24,60 @@ class HomeController extends Controller
      * @return response()
      */
 
-    public function home(Request $request)
+     public function home(Request $request)
     {
-        if(!Auth::check()){//if not logged in yet, the flush the session, in case some of the steps session stays
-                            // then redirect to the login page, or the sign in page
+        if (!Auth::check()) {
+            // Flush session and redirect to login if not authenticated
             Session::flush();
             return redirect('login')->withErrors(['errorHome' => 'You have no access']);
-
         }
 
         $user = Auth::user();
-        $query = Evaluation::query();
+        $query = Evaluation::query()->where('user_id', $user->id);
 
-        // Check for week filter
+        // Apply week filter if specified
         if ($request->filled('week')) {
             $query->where('week_number', $request->input('week'));
         }
-        // Clear any session data related to evaluations, if needed
-        $request->session()->forget([
-            // Add session keys here if you need to clear specific ones
-        ]);
 
-        if ($user->group_id == 99) {
-            // Admin: retrieve all evaluations with related data
-            $evaluations = $query->with(['lecturer', 'matkul', 'user'])->paginate(10);
-        } else {
-            // Regular user: retrieve evaluations tied to their user ID
-            $evaluations = $query->where('user_id', $user->id)
-                ->with(['lecturer', 'matkul'])
-                ->paginate(10);
+        // Apply completed filter if specified (true or false)
+        if ($request->filled('completed')) {
+            $completedStatus = $request->input('completed') == 'true' ? true : false;
+            $query->where('completed', $completedStatus);
         }
 
-        // Pass all the necessary data to the view
+        // Apply lecturer type filter if specified (1 = Dosen, 2 = Instruktur)
+        if ($request->filled('lecturer_type')) {
+            $lecturerType = $request->input('lecturer_type');
+            $query->whereHas('lecturer', function ($query) use ($lecturerType) {
+                $query->where('type', $lecturerType);
+            });
+        }
+
+        // Apply search filter if specified
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $query->where(function ($subQuery) use ($searchTerm) {
+                $subQuery->whereHas('lecturer', function ($lecturerQuery) use ($searchTerm) {
+                    $lecturerQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                })
+                ->orWhereHas('matkul', function ($matkulQuery) use ($searchTerm) {
+                    $matkulQuery->where('name', 'LIKE', "%{$searchTerm}%");
+                });
+            });
+        }
+
+        // Retrieve evaluations with lecturer and matkul relationships
+        $evaluations = $query->with(['lecturer', 'matkul'])->paginate(10);
+
+        // Pass data to the view, including search term, week, completed, and lecturer_type for the form fields
         return view('home', [
             'evaluations' => $evaluations,
-            'user' => $user
+            'user' => $user,
+            'week' => $request->input('week'),
+            'search' => $request->input('search'),
+            'completed' => $request->input('completed'),
+            'lecturer_type' => $request->input('lecturer_type'),
         ]);
-    }
-     /**
-     * Write code on Method
-     *
-     * @return response()
-     */
-    public function search(Request $request)
-    {
-        $searchTerm = $request->input('search');
-        $keywords = explode(' ', $searchTerm); // Split search term by spaces into keywords
-
-        // If admin (group 99), allow search across all models
-        if (Auth::user()->group_id == 99) {
-            $evaluations = Evaluation::where(function ($query) use ($keywords) {
-                foreach ($keywords as $keyword) {
-                    $query->orWhere('user_id', 'LIKE', "%{$keyword}%")
-                        ->orWhere('lecturer_id', 'LIKE', "%{$keyword}%")
-                        ->orWhere('matkul_id', 'LIKE', "%{$keyword}%")
-                        ->orWhere('week_number', 'LIKE', "%{$keyword}%");
-                }
-            })->paginate(10);
-
-            $lecturers = Lecturer::where(function ($query) use ($keywords) {
-                foreach ($keywords as $keyword) {
-                    $query->orWhere('name', 'LIKE', "%{$keyword}%");
-                }
-            })->paginate(10);
-
-            $matkuls = Matkul::where(function ($query) use ($keywords) {
-                foreach ($keywords as $keyword) {
-                    $query->orWhere('name', 'LIKE', "%{$keyword}%");
-                }
-            })->paginate(10);
-
-            return view('home', compact('evaluations', 'lecturers', 'matkuls'));
-        } else {
-            // Regular user, only access evaluations tied to their user_id
-            $evaluations = Evaluation::where('user_id', Auth::user()->id)
-                            ->where(function ($query) use ($keywords) {
-                                foreach ($keywords as $keyword) {
-                                    $query->orWhere('lecturer_id', 'LIKE', "%{$keyword}%")
-                                        ->orWhere('matkul_id', 'LIKE', "%{$keyword}%")
-                                        ->orWhere('week_number', 'LIKE', "%{$keyword}%");
-                                }
-                            })
-                            ->paginate(10);
-
-            // Get the related lecturers and matkuls
-            $lecturers = Lecturer::whereIn('id', $evaluations->pluck('lecturer_id'))->paginate(10);
-            $matkuls = Matkul::whereIn('id', $evaluations->pluck('matkul_id'))->paginate(10);
-
-            return view('home', compact('evaluations', 'lecturers', 'matkuls'));
-        }
     }
 }

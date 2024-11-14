@@ -24,7 +24,11 @@ class EvaluasiController extends Controller
         // Check if the evaluation exists and if it belongs to the logged-in user
         if (!$evaluation || $evaluation->user_id != Auth::id()) {
             // If the evaluation doesn't exist or doesn't belong to the logged-in user, redirect to the home page
-            return redirect('/home')->withErrors(['error' => 'You are not authorized to view this evaluation.']);
+            return redirect('/home')->withErrors(['error' => 'Sebaiknya jangan gegabah 😅']);
+        }
+        //Check if the evaluation is already diisi sebelumnya, kalau udah ya jangan dibolehin isi lagi dong
+        if (!$evaluation || $evaluation->completed == true){
+            return redirect('/home')->withErrors(['error' => 'Kan udah diisi, jangan diisi lagi dong 😥']);
         }
 
         // Fetch questions and group them by type
@@ -111,7 +115,7 @@ class EvaluasiController extends Controller
         $dompdf->render();
 
         // Generate the filename using the lecturer and matkul names
-        $filename = "Tabulasi EDOM/EOM {$lecturer->name}-{$matkul->name}.pdf";
+        $filename = "Tabulasi EDOM/EIOM {$lecturer->name}-{$matkul->name}.pdf";
 
         // Stream the generated PDF with the custom filename
         return $dompdf->stream($filename);
@@ -375,7 +379,7 @@ class EvaluasiController extends Controller
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
     
-        $filename = "Tabulasi EDOM-EOM TPMO {$lecturer->name}-{$matkul->name}.pdf";
+        $filename = "Tabulasi EDOM-EIOM TPMO {$lecturer->name}-{$matkul->name}.pdf";
         return $dompdf->stream($filename);
     }
     
@@ -406,7 +410,7 @@ class EvaluasiController extends Controller
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
     
-        $filename = "Tabulasi EDOM-EOM TOPKR {$lecturer->name}-{$matkul->name}.pdf";
+        $filename = "Tabulasi EDOM-EIOM TOPKR {$lecturer->name}-{$matkul->name}.pdf";
         return $dompdf->stream($filename);
     }
     public function getTPMOdata($matkulId, $lecturerId)

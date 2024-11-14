@@ -40,8 +40,8 @@
                 @php $questionNumber++; @endphp
             @endforeach
         @endforeach
-
-        <button type="submit" class="btn btn-primary mt-4">Submit Evaluation</button>
+        
+        <button onclick='return confirm("Yakinkah anda, akan pilihan anda? Tidakkah anda ingin mempertimbangkan kembali pilihan pada setiap pertanyaan?")' type="submit" class="btn btn-primary mt-4">Submit Evaluation</button>
     </form>
 </div>
 @endsection
