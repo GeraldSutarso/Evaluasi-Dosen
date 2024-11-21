@@ -12,10 +12,9 @@ return new class extends Migration
     public function up() {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('student_id')->unique(); // Unique for login
-            $table->foreignId('group_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
+            $table->string('name')->nullable();
+            $table->string('student_id')->unique()->nullable(); // Unique for login
+            $table->foreignId('group_id')->nullable()->constrained()->onDelete('cascade');
         });
     }
 

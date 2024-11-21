@@ -12,6 +12,7 @@ class Question extends Model
         'text',
         'type',
     ];
+    public $timestamps = false;
     public function responses()
     {
         return $this->hasMany(Response::class);

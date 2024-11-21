@@ -15,9 +15,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // User who submitted the evaluation
             $table->foreignId('matkul_id')->constrained()->onDelete('cascade'); // Matkul evaluated
             $table->foreignId('lecturer_id')->constrained()->onDelete('cascade'); // Lecturer being evaluated
-            $table->boolean('completed')->default(0);
+            $table->boolean('completed')->default(0)->nullable();
             $table->integer('week_number');
-            $table->timestamps();
         });
     }
 

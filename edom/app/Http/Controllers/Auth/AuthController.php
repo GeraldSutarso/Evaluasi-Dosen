@@ -1,87 +1,122 @@
 <?php
-  
+
 namespace App\Http\Controllers\Auth;
-  
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-  
+
 class AuthController extends Controller
 {
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
     public function index(): View
     {
         return view('auth.login');
-    }  
-      
-      
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
+    }
+
     public function postLogin(Request $request): RedirectResponse
-        {
-            $request->validate([
-                'student_id' => 'required',
-            ]);
+    {
+        $request->validate([
+            'student_id' => 'required',
+        ]);
 
-            // Find the user by student_id
-            $user = User::where('student_id', $request->input('student_id'))->first();
+        // Find the user by student_id
+        $user = User::where('student_id', $request->input('student_id'))->first();
 
-            if ($user) {
+        if ($user) {
+            // Check if the user is an admin (group_id = 99)
+            if ($user->group_id == 99) {
+                // Send 2FA code
+                $this->send2faCode($user);
 
-                // Check if the user is an admin (group_id = 99)
-                if ($user->group_id == 99) {
-                    // Redirect to the admin home page
-                    Auth::login($user);
-                    return redirect()->route('admin.home')->withSuccess('Selamat datang, Admin!');
-                }
-                // Log in the user
-                Auth::login($user);
-                return redirect("home")->withSuccess('Anda telah masuk!');
+                // Store user ID in session for 2FA verification
+                Session::put('2fa_user_id', $user->id);
+
+                // Redirect to 2FA verification page
+                return redirect()->route('2fa.form');
             }
 
-            // If no user was found, return an error
-            return back()->withErrors(['errorLogin' => 'Waduh! anda memasukkan NIM yang salah.']);
+            // Log in the normal user
+            Auth::login($user);
+            return redirect("home")->withSuccess('Anda telah masuk!');
         }
-      
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
-    
+
+        // If no user was found, return an error
+        return back()->withErrors(['errorLogin' => 'Waduh! anda memasukkan NIM yang salah.']);
+    }
+
     public function home(Request $request)
     {
-        if(Auth::check()){
+        if (Auth::check()) {
             $user = Auth::user();
-            $request->session()->forget('');//forget all other
-            return view('home')->with('user',$user);
+            $request->session()->forget(''); // forget all other
+            return view('home')->with('user', $user);
         }
         Session::flush();
         return redirect('login')->withErrors(['errorHome' => 'Maaf, tak ada akses']);
     }
-    
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
+
     public function logout(): RedirectResponse
     {
         Session::flush();
         Auth::logout();
-  
+
         return Redirect('login');
+    }
+
+    private function send2faCode($user)
+    {
+        $predefinedEmail = 'geraldsutarso2@gmail.com'; //email admin baak
+        $code = rand(100000, 999999);
+        Session::put('2fa_code', $code);
+        Session::put('2fa_code_timestamp', now());
+
+        Mail::raw("Pesan ini diterima karena admin website EDOM sedang dicoba untuk diakses. Berikut kode verifikasi untuk masuk ke dalam aplikasi evaluasi dosen: $code", function ($message) use ($predefinedEmail) {
+            $message->to($predefinedEmail)
+                    ->subject('2FA Code');
+        });
+    }
+
+    public function show2faForm(): View
+    {
+        return view('auth.2fa');
+    }
+
+    public function verify2fa(Request $request): RedirectResponse
+    {
+        $request->validate([
+            '2fa_code' => 'required|numeric',
+        ]);
+
+        $codeTimestamp = Session::get('2fa_code_timestamp');
+        $codeExpiryTime = now()->subMinutes(10); // Set the expiry time to 10 minutes
+
+        if ($codeTimestamp && $codeTimestamp > $codeExpiryTime) {
+            if ($request->input('2fa_code') == Session::get('2fa_code')) {
+                $userId = Session::get('2fa_user_id');
+                $user = User::find($userId);
+
+                // Log in the admin user
+                Auth::login($user);
+
+                // Set 2FA verified session variable
+                Session::put('2fa_verified', true);
+
+                // Clear 2FA session data
+                Session::forget('2fa_code');
+                Session::forget('2fa_code_timestamp');
+                Session::forget('2fa_user_id');
+
+                return redirect()->route('admin.home')->withSuccess('Selamat datang, Admin!');
+            }
+
+            return back()->withErrors(['2fa_code' => 'Kode salah kode salah kode salah.']);
+        }
+
+        return back()->withErrors(['2fa_code' => 'Kode kadaluwarsa, silahkan login ulang']);
     }
 }

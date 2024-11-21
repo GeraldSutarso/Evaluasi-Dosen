@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Evaluasi\EvaluasiController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Modifier\ImportController;
+use App\Http\Controllers\Modifier\ExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +18,9 @@ use App\Http\Controllers\Admin\AdminController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+//2 factor verif auth
+Route::get('2fa', [AuthController::class, 'show2faForm'])->name('2fa.form');
+Route::post('2fa', [AuthController::class, 'verify2fa'])->name('2fa.verify');
 
 //login or logout authentication routes
 Route::get('login', [AuthController::class, 'index'])->name('login');
@@ -23,7 +28,7 @@ Route::post('post-login', [AuthController::class, 'postLogin'])->name('login.pos
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', 'log.ip','log.user','2fa'])->group(function () {
     // Admin Home Route (GET request)
     Route::get('/admin/home', [AdminController::class, 'home'])->name('admin.home');
     Route::get('admin/evaluation/{evaluation_id}', [AdminController::class, 'showEvaluationUsers'])->name('admin.showEvaluationUsers');
@@ -44,6 +49,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     //summary TOPKR
     Route::get('admin/evaluation/summary/TOPKR/{matkulId}/{lecturerId}', [EvaluasiController::class, 'calculateSummaryTOPKR'])
     ->name('evaluation.summaryTOPKR');
+
+    //Excel database management:
+    Route::get('/import', [ImportController::class, 'index'])->name('import.index');
+    Route::post('/import', [ImportController::class, 'import'])->name('import.process');
+    Route::get('/export', [ExportController::class, 'exportDatabase'])->name('export.process');
+    Route::get('/modify', [AdminController::class,'modify'])->name('admin.modify');
+
     //Fallback
     Route::fallback(function () {
         return redirect('/');
@@ -51,8 +63,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 });
 
+// Route::middleware(['log.ip'])->group(function () {
+//     // Protected routes
+//     Route::get('/home', [HomeController::class, 'index'])->name('home');
+//     // Add other routes here
+// });
+
+
 //middleware check if user authenticated
-Route::middleware(['auth.check'])->group(function () {
+Route::middleware(['auth','auth.check', 'log.ip', 'log.user'])->group(function () {
     //routes that require user to be authenticated
     
     //Home routes
@@ -71,3 +90,4 @@ Route::middleware(['auth.check'])->group(function () {
     })->name('ddsession');
     }
 );
+

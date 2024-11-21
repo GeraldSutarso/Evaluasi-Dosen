@@ -9,7 +9,7 @@ class Matkul extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'description'];
-
+    public $timestamps = false;
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'group_matkul')->withPivot('week_number');

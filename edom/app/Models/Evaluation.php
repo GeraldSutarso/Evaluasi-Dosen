@@ -17,7 +17,7 @@ class Evaluation extends Model
         'week_number',
     ];
     protected $table = 'evaluations';
-
+    public $timestamps = false;
     public function user()
     {
         return $this->belongsTo(User::class);

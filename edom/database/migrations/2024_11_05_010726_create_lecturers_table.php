@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('lecturers', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Name of the lecturer
-            $table->timestamps();
             $table->integer('type'); //Instruktur atau dosen (1 = dosen, 2 = instruktur)
         });
     }

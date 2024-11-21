@@ -18,10 +18,12 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'name',
         'student_id',
         'group_id'
     ];
+    public $timestamps = false;
     
         public function group()
     {

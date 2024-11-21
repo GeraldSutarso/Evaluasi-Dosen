@@ -14,7 +14,6 @@ return new class extends Migration
             $table->id();
             $table->string('text'); // The question text
             $table->string('type'); // The type of question
-            $table->timestamps();
         });
     }
 

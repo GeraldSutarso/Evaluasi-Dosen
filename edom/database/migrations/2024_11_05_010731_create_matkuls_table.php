@@ -13,7 +13,6 @@ return new class extends Migration
         Schema::create('matkuls', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Name of the class
-            $table->timestamps();
         });
     }
 

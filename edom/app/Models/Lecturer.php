@@ -10,7 +10,7 @@ class Lecturer extends Model
     use HasFactory;
     
     protected $fillable = ['name' ,'type'];
-
+    public $timestamps = false;
     public function matkuls()
     {
         return $this->belongsToMany(Matkul::class, 'lecturer_matkul');

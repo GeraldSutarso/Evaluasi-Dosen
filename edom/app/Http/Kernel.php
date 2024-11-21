@@ -21,6 +21,9 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\LogIP::class,
+        \App\Http\Middleware\LogUser::class,
+        \App\Http\Middleware\TwoFactorAuth::class,
     ];
 
     /**
@@ -66,5 +69,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'auth.check' => \App\Http\Middleware\CheckUserAuth::class,
         'admin' => \App\Http\Middleware\CheckAdmin::class,
+        'log.ip' => \App\Http\Middleware\LogIP::class,
+        'log.user' => \App\Http\Middleware\LogUser::class,
+        '2fa' => \App\Http\Middleware\TwoFactorAuth::class,
     ];
 }
