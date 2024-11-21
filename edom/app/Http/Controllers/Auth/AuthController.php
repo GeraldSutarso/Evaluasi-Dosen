@@ -77,7 +77,7 @@ class AuthController extends Controller
 
         Mail::raw("Pesan ini diterima karena admin website EDOM sedang dicoba untuk diakses. Berikut kode verifikasi untuk masuk ke dalam aplikasi evaluasi dosen: $code", function ($message) use ($predefinedEmail) {
             $message->to($predefinedEmail)
-                    ->subject('2FA Code');
+                    ->subject('Kode Verifikasi');
         });
     }
 

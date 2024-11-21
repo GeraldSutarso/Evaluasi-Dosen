@@ -6,8 +6,9 @@ use App\Models\Evaluation;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 
-class EvaluationsExport implements FromCollection, WithHeadings, WithTitle
+class EvaluationsExport implements FromCollection, WithHeadings, WithTitle, WithStrictNullComparison
 {
     /**
      * Return the collection of evaluations to be exported.
