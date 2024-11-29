@@ -26,8 +26,8 @@ class ExportController extends Controller
             public function sheets(): array
             {
                 return [
-                    'Users' => new UsersExport(),
                     'Groups' => new GroupsExport(),
+                    'Users' => new UsersExport(),
                     'Lecturers' => new LecturersExport(),
                     'Matkuls' => new MatkulsExport(),
                     'Evaluations' => new EvaluationsExport(),
