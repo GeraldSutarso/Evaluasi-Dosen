@@ -2,6 +2,27 @@
 
 @section('content')
 <div class="container mt-4">
+    <h2>
+        @if(isset($lecturer))
+            {{ $lecturer->type == 1 ? 'Dosen' : 'Instruktur' }}: {{ $lecturer->name }}
+        @else
+            Pengajar Tidak Ditemukan
+        @endif
+    </h2>
+  	<h3>
+		@if(isset($matkul))
+      		Mata Kuliah: {{ $matkul->name }}
+      	@else
+      		Mata Kuliah Tidak Ditemukan
+      	@endif
+  	</h3>
+	<h1>
+      	@if(isset($group))
+      		Grup: {{ $group->name }}
+      	@else
+      		Tidak ada Grup
+      	@endif
+  	</h1>
     <div class="table-responsive">
         <table class="table table-hover">
             <thead>
@@ -14,12 +35,26 @@
             <tbody>
                 @foreach($users as $user)
                     @php
-                        $evaluation = $user->evaluations->first();
+                        // Determine background color based on user status
+                        $backgroundColor = match($user->status) {
+                            'complete' => '#e2fade',   // Green for all evaluations completed
+                            'incomplete' => '#ffd1d1', // Red for some evaluations incomplete
+                            'no_evaluations' => '#d3d3d3', // Gray for no evaluations assigned
+                            default => '#ffffff',      // Default to white
+                        };
                     @endphp
-                    <tr style="background-color: {{ $evaluation && $evaluation->completed ? '#e2fade' : '#ffd1d1' }};">
+                    <tr style="background-color: {{ $backgroundColor }};">
                         <td>{{ $user->student_id }}</td>
                         <td>{{ $user->name }}</td>
-                        <td>{{ $evaluation && $evaluation->completed ? 'Sudah diisi' : 'Belum diisi' }}</td>
+                        <td>
+                            @if($user->status === 'complete')
+                                Sudah diisi
+                            @elseif($user->status === 'incomplete')
+                                Belum diisi
+                            @else
+                                Tidak Ada Evaluasi
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

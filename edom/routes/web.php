@@ -7,7 +7,7 @@ use App\Http\Controllers\Evaluasi\EvaluasiController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Modifier\ImportController;
 use App\Http\Controllers\Modifier\ExportController;
-
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -55,12 +55,17 @@ Route::middleware(['auth', 'admin', 'log.ip','log.user','2fa'])->group(function 
     Route::post('/import', [ImportController::class, 'import'])->name('import.process');
     Route::get('/export', [ExportController::class, 'exportDatabase'])->name('export.process');
     Route::get('/modify', [AdminController::class,'modify'])->name('admin.modify');
+    //set tahun ajaran sama semester
+	Route::post('/set-summary-record', [AdminController::class, 'setSummaryRecord'])->name('set.summary.record');
 
+  	
     //Fallback
     Route::fallback(function () {
         return redirect('/');
-    });
-
+        });
+    
+    //dashboard admin
+    Route::get('admin/dashboard',[AdminController::class,'evaluationTable'])->name('dashboard.edom');
 });
 
 // Route::middleware(['log.ip'])->group(function () {

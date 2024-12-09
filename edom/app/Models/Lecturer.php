@@ -9,7 +9,7 @@ class Lecturer extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['name' ,'type'];
+    protected $fillable = ['id','name' ,'type'];
     public $timestamps = false;
     public function matkuls()
     {

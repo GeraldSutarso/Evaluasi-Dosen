@@ -24,11 +24,11 @@ class EvaluasiController extends Controller
         // Check if the evaluation exists and if it belongs to the logged-in user
         if (!$evaluation || $evaluation->user_id != Auth::id()) {
             // If the evaluation doesn't exist or doesn't belong to the logged-in user, redirect to the home page
-            return redirect('/home')->withErrors(['error' => 'Sebaiknya jangan gegabah 😅']);
+            return redirect('/home')->withErrors(['error' => 'Sebaiknya jangan gegabah']);
         }
         //Check if the evaluation is already diisi sebelumnya, kalau udah ya jangan dibolehin isi lagi dong
         if (!$evaluation || $evaluation->completed == true){
-            return redirect('/home')->withErrors(['error' => 'Kan udah diisi, jangan diisi lagi dong 😥']);
+            return redirect('/home')->withErrors(['error' => 'Kan sudah diisi, jangan diisi lagi ya']);
         }
 
         // Fetch questions and group them by type
@@ -39,41 +39,53 @@ class EvaluasiController extends Controller
     }
 
     public function submitEvaluation(Request $request, $evaluationId)
-    {
-        $evaluation = Evaluation::findOrFail($evaluationId);
-        $user = Auth::user();
+{
+    $evaluation = Evaluation::findOrFail($evaluationId);
+    $user = Auth::user();
 
-        // Ensure only the assigned user can submit responses for this evaluation
-        if ($evaluation->user_id !== $user->id) {
-            return redirect()->route('home')->withErrors(['error' => 'Unauthorized access.']);
-        }
-
-        // Validate that responses are provided for each question
-        $request->validate([
-            'responses' => 'required|array',
-            'responses.*' => 'required|in:1,2,3,4', // Ensures each response is between 1 and 4
-        ]);
-
-        // Get the evaluation based on the provided ID
-        $evaluation = Evaluation::findOrFail($evaluationId);
-
-        // Loop through each question's response and save it to the responses table
-        foreach ($request->responses as $questionId => $responseValue) {
-            Response::create([
-                'evaluation_id' => $evaluation->id,
-                'question_id' => $questionId,
-                'response_value' => $responseValue,
-            ]);
-        }
-
-        $evaluation->completed = true;
-        $evaluation->save();
-
-        // Redirect back with a success message
-        return redirect()->route('home')->with('success', 'Evaluasi berhasil');
-    
-
+    // Ensure only the assigned user can submit responses for this evaluation
+    if ($evaluation->user_id !== $user->id) {
+        return redirect()->route('home')->withErrors(['error' => 'Gunakanlah akun milik diri sendiri..']);
     }
+
+    // Check if the evaluation is already completed
+    if ($evaluation->completed) {
+        return redirect()->route('home')->withErrors(['error' => 'Sudah pernah Diisi.']);
+    }
+
+    // Validate that responses are provided for each question
+    $request->validate([
+        'responses' => 'required|array',
+        'responses.*' => 'required|in:1,2,3,4', // Ensures each response is between 1 and 4
+    ]);
+
+    // Loop through each question's response
+    foreach ($request->responses as $questionId => $responseValue) {
+        // Check if a response already exists for this evaluation and question
+        $existingResponse = Response::where('evaluation_id', $evaluation->id)
+            ->where('question_id', $questionId)
+            ->exists();
+
+        if ($existingResponse) {
+            return redirect()->route('home')->withErrors(['error' => 'Sudah pernah diisi.']);
+        }
+
+        // Save the new response
+        Response::create([
+            'evaluation_id' => $evaluation->id,
+            'question_id' => $questionId,
+            'response_value' => $responseValue,
+        ]);
+    }
+
+    // Mark the evaluation as completed once all responses are saved
+    $evaluation->completed = true;
+    $evaluation->save();
+
+    // Redirect back with a success message
+    return redirect()->route('home')->with('success', 'Berhasil dikumpul.');
+}
+
 
     public function downloadPDF($matkulId, $lecturerId)
     {

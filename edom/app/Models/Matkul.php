@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Matkul extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description'];
+    protected $fillable = ['id','name', 'description'];
     public $timestamps = false;
     public function groups()
     {

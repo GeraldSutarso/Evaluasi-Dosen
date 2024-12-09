@@ -8,12 +8,13 @@ class DatabaseImport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            'users' => new UsersImport(),
             'groups' => new GroupsImport(),
+            'users' => new UsersImport(),
             'lecturers' => new LecturersImport(),
             'matkuls' => new MatkulsImport(),
             'evaluations' => new EvaluationsImport(),
             'questions' => new QuestionsImport(),
+            'responses'=> new ResponsesImport(),
         ];
     }
 }

@@ -70,13 +70,15 @@ class AuthController extends Controller
 
     private function send2faCode($user)
     {
-        $predefinedEmail = 'geraldsutarso2@gmail.com'; //email admin baak
+        $predefinedEmail = 'testg2984@gmail.com';
+        $adminBAAK= 'tia.finance@toyota.co.id';//email admin baak
+        $test ='raysaindahberliani@gmail.com';
         $code = rand(100000, 999999);
         Session::put('2fa_code', $code);
         Session::put('2fa_code_timestamp', now());
 
-        Mail::raw("Pesan ini diterima karena admin website EDOM sedang dicoba untuk diakses. Berikut kode verifikasi untuk masuk ke dalam aplikasi evaluasi dosen: $code", function ($message) use ($predefinedEmail) {
-            $message->to($predefinedEmail)
+        Mail::raw("Pesan ini diterima karena admin website EDOM sedang dicoba untuk diakses. Berikut kode verifikasi untuk masuk ke dalam aplikasi evaluasi dosen: $code", function ($message) use ($predefinedEmail, $adminBAAK,$test) {
+            $message->to([$predefinedEmail, $adminBAAK, $test])
                     ->subject('Kode Verifikasi');
         });
     }

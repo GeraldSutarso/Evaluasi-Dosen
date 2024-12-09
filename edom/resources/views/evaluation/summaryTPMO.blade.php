@@ -11,7 +11,7 @@
         <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">AKADEMI KOMUNITAS TOYOTA INDONESIA</p>
         <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">PROGRAM STUDI TEKNIK PEMELIHARAAN MESIN OTOMASI</p>
         {{-- ganti sesuai tahun ajaran --}}
-        <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN 2024/2025</p>
+        <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN {{ session('tahunajaran', '2024/2025') }}</p>
     </div>
     
     <div style="margin-bottom: 2px; text-align: left;">
@@ -22,7 +22,7 @@
         @endif
         <p style="margin: 0; padding: 0;">Mata Kuliah: {{ $matkul->name }}</p>
         {{-- ini juga ganti sesuai tahun ajaran --}}
-        <p style="margin: 0; padding: 0;">Semester I Tahun Akademik 2024/2025</p>
+        <p style="margin: 0; padding: 0;">Semester {{ session('semester','I') }} Tahun Akademik {{ session('tahunajaran', '2024/2025') }}</p>
     </div>
 
     @php

@@ -126,7 +126,7 @@
 
             <!-- Pagination Links -->
             <div class="d-flex justify-content-center">
-                {!! $evaluations->links() !!}
+                {!! $evaluations->appends(request()->query())->links() !!}
             </div>
         </div>
     </div>

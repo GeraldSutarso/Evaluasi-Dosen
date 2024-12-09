@@ -20,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+        ini_set('memory_limit', '1024M'); // Adjust the memory limit as needed
+    	ini_set('max_execution_time', '1200'); // Adjust the execution time as needed
         //
     }
 }

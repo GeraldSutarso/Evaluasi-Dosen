@@ -22,12 +22,13 @@ class FullDatabaseExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            'users' => new UsersExport(),
             'groups' => new GroupsExport(),
+            'users' => new UsersExport(),
             'lecturers' => new LecturersExport(),
             'matkuls' => new MatkulsExport(),
             'evaluations' => new EvaluationsExport(),
             'questions' => new QuestionsExport(),
+            'responses' => new ResponsesExport(),
         ];
     }
 }
