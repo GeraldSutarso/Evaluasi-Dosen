@@ -22,7 +22,7 @@
                 <div class="input-group">
                     <select name="week" class="form-select" onchange="this.form.submit()">
                         <option value="">Filter per Minggu</option>
-                        @for ($i = 1; $i <= 21; $i++) <!-- Adjust week range as needed -->
+                        @for ($i = 1; $i <= $maxWeekNumber; $i++) <!-- Adjust week range as needed -->
                             <option value="{{ $i }}" {{ request('week') == $i ? 'selected' : '' }}>Minggu ke-{{ $i }}</option>
                         @endfor
                     </select>

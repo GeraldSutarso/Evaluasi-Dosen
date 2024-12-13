@@ -32,17 +32,18 @@ class GroupsImport implements ToModel, WithHeadingRow, WithEvents
             ['id' => $row['id']], // Match by ID
             [
                 'name' => $row['name'],
+                'prodi' =>$row['prodi'],
             ]
         );
 
         // Log the user data after updateOrCreate
-        Log::info('Question Data: ' . json_encode($groups));
+        Log::info('Group Data: ' . json_encode($groups));
 
         // Check if the user was recently created or updated
         if ($groups->wasRecentlyCreated) {
-            Log::info('Question was recently created: ' . json_encode($groups));
+            Log::info('Group was recently created: ' . json_encode($groups));
         } else {
-            Log::info('Question was updated: ' . json_encode($groups));
+            Log::info('group was updated: ' . json_encode($groups));
         }
 
         return $groups;

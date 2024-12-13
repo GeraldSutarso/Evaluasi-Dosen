@@ -88,6 +88,7 @@ class AdminController extends Controller
 
         $evaluations = $evaluationsQuery->paginate(10);
         $allGroups = Group::select('name')->distinct()->get();
+      	$maxWeek = Evaluation::max('week_number');
 
         return view('admin.home', [
             'evaluations' => $evaluations,
@@ -97,6 +98,7 @@ class AdminController extends Controller
             'completion_status' => $completionStatus,
             'group' => $group,
             'allGroups' => $allGroups,
+          	'maxWeekNumber' => $maxWeek,
         ]);
     }
 
@@ -213,33 +215,136 @@ class AdminController extends Controller
 
     public function evaluationTable()
     {
-    $weeks = Evaluation::distinct()->pluck('week_number'); // Get all unique weeks
-    $groups = Group::all(); // Retrieve all groups
+        // Table data logic
+        $weeks = Evaluation::distinct()->pluck('week_number'); // Get all unique weeks
+        $groups = Group::all(); // Retrieve all groups
 
-    $tableData = [];
-    foreach ($groups as $group) {
-        foreach ($weeks as $week) {
-            // Get evaluations for the specific group and week
-            $weekEvaluations = Evaluation::whereHas('user', function ($query) use ($group) {
-                $query->where('group_id', $group->id); // Filter evaluations by group
-            })->where('week_number', $week)->get();
+        $tableData = [];
+        foreach ($groups as $group) {
+            foreach ($weeks as $week) {
+                // Get evaluations for the specific group and week
+                $weekEvaluations = Evaluation::whereHas('user', function ($query) use ($group) {
+                    $query->where('group_id', $group->id); // Filter users by group_id
+                })->where('week_number', $week)->get();
 
-            if ($weekEvaluations->isEmpty()) {
-                // If no evaluations are assigned, mark as `null`
-                $tableData[$group->name][$week] = null;
-            } else {
-                // Check if all evaluations for the group and week are completed
-                $allCompleted = $weekEvaluations->every('completed');
-                $tableData[$group->name][$week] = [
-                    'group_name' => $group->name,
-                    'all_completed' => $allCompleted,
-                ];
+                if ($weekEvaluations->isEmpty()) {
+                    // If no evaluations are assigned, mark as `null`
+                    $tableData[$group->name][$week] = null;
+                } else {
+                    // Check if all evaluations for the group and week are completed
+                    $allCompleted = $weekEvaluations->every('completed');
+                    $tableData[$group->name][$week] = [
+                        'group_name' => $group->name,
+                        'all_completed' => $allCompleted,
+                    ];
+                }
             }
         }
+
+        // Modified chart data logic
+        $chartData = DB::table('evaluations')
+            ->join('users', 'evaluations.user_id', '=', 'users.id')
+            ->join('groups', 'users.group_id', '=', 'groups.id')
+            ->selectRaw('
+                CEIL(week_number / 4) as month_number,
+                CASE 
+                    WHEN CEIL(week_number / 4) = 1 THEN "Januari"
+                    WHEN CEIL(week_number / 4) = 2 THEN "Februari"
+                    WHEN CEIL(week_number / 4) = 3 THEN "Maret"
+                    WHEN CEIL(week_number / 4) = 4 THEN "April"
+                    WHEN CEIL(week_number / 4) = 5 THEN "Mei"
+                    WHEN CEIL(week_number / 4) = 6 THEN "Juni"
+                    WHEN CEIL(week_number / 4) = 7 THEN "Juli"
+                    WHEN CEIL(week_number / 4) = 8 THEN "Agustus"
+                    WHEN CEIL(week_number / 4) = 9 THEN "September"
+                    WHEN CEIL(week_number / 4) = 10 THEN "Oktober"
+                    WHEN CEIL(week_number / 4) = 11 THEN "November"
+                    WHEN CEIL(week_number / 4) = 12 THEN "Desember"
+
+                END as month_name,
+                groups.id as group_id,
+                groups.name as group_name,
+                COUNT(DISTINCT groups.id) as total_groups,
+                SUM(CASE 
+                    WHEN evaluations.completed = 1 THEN 1 
+                    ELSE 0 
+                END) as completed_count,
+                COUNT(*) as total_evaluations'
+            )
+            ->groupBy('month_number', 'month_name', 'groups.id', 'groups.name')
+            ->orderBy('month_number')
+            ->get();
+
+        // Process data to count completed groups per month
+        $monthlyStats = [];
+        foreach ($chartData as $record) {
+            $monthNum = $record->month_number;
+            $monthName = $record->month_name;
+            
+            if (!isset($monthlyStats[$monthNum])) {
+                $monthlyStats[$monthNum] = [
+                    'month' => $monthName,
+                    'completed_groups' => 0,
+                    'not_completed_groups' => 0
+                ];
+            }
+            
+            // A group is considered complete if all evaluations are completed
+            if ($record->completed_count == $record->total_evaluations) {
+                $monthlyStats[$monthNum]['completed_groups']++;
+            } else {
+                $monthlyStats[$monthNum]['not_completed_groups']++;
+            }
+        }
+
+        $formattedChartData = array_values($monthlyStats);
+
+            // Weekly Evaluation Chart Data Logic (New)
+    $weeklyStats = DB::table('evaluations')
+    ->join('users', 'evaluations.user_id', '=', 'users.id')
+    ->join('groups', 'users.group_id', '=', 'groups.id')
+    ->selectRaw('
+        week_number,
+        groups.id as group_id,
+        COUNT(DISTINCT groups.id) as total_groups,
+        SUM(CASE 
+            WHEN evaluations.completed = 1 THEN 1 
+            ELSE 0 
+        END) as completed_count,
+        COUNT(evaluations.id) as total_evaluations' // Count individual evaluations, not just rows
+    )
+    ->groupBy('week_number', 'groups.id')  // Group by week and group ID
+    ->orderBy('week_number')
+    ->get();
+
+    // Process data to track completed groups per week
+    $weeklyData = [];
+    foreach ($weeklyStats as $stat) {
+        $completedGroups = ($stat->completed_count == $stat->total_evaluations) ? 1 : 0;
+
+        // Find if the week already exists in the data array
+        if (!isset($weeklyData[$stat->week_number])) {
+            $weeklyData[$stat->week_number] = [
+                'week' => 'W' . $stat->week_number,
+                'completed_groups' => 0,
+                'not_completed_groups' => 0,
+            ];
+        }
+
+        // Update the counts for completed and not completed groups
+        if ($completedGroups) {
+            $weeklyData[$stat->week_number]['completed_groups']++;
+        } else {
+            $weeklyData[$stat->week_number]['not_completed_groups']++;
+        }
     }
-    
-        return view('admin.dashboard', compact('weeks', 'tableData'));
+
+    // Reset keys to re-index the data
+    $weeklyData = array_values($weeklyData);
+
+    return view('admin.dashboard', compact('weeks', 'tableData', 'formattedChartData', 'weeklyData'));
+
     }
-      
+
 
 }

@@ -96,6 +96,9 @@ class HomeController extends Controller
             
          // Retrieve evaluations with lecturer and matkul relationships
          $evaluations = $query->with(['lecturer', 'matkul'])->paginate(10);
+       
+       	// max week num
+       	 $maxWeekNumber = Evaluation::where('user_id', $user->id)->max('week_number');
      
          // Pass data to the view, including search term, week, completed, and lecturer_type for the form fields
          return view('home', [
@@ -105,6 +108,7 @@ class HomeController extends Controller
              'search' => $request->input('search'),
              'completed' => $request->input('completed'),
              'lecturer_type' => $request->input('lecturer_type'),
+         	 'maxWeekNumber' => $maxWeekNumber,
          ]);
      }
 }

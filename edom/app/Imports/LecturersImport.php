@@ -37,13 +37,13 @@ class LecturersImport implements ToModel, WithHeadingRow, WithEvents
         );
 
         // Log the user data after updateOrCreate
-        Log::info('Question Data: ' . json_encode($lecturers));
+        Log::info('lecturer Data: ' . json_encode($lecturers));
 
         // Check if the user was recently created or updated
         if ($lecturers->wasRecentlyCreated) {
-            Log::info('Question was recently created: ' . json_encode($lecturers));
+            Log::info('lecturer was recently created: ' . json_encode($lecturers));
         } else {
-            Log::info('Question was updated: ' . json_encode($lecturers));
+            Log::info('lectrer was updated: ' . json_encode($lecturers));
         }
 
         return $lecturers;

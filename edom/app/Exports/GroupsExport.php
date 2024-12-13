@@ -29,6 +29,7 @@ class GroupsExport implements FromCollection, WithHeadings, WithTitle
         return [
             'id',
             'name',
+            'prodi',
         ];
     }
 

@@ -19,72 +19,79 @@ class EvaluasiController extends Controller
 {
     public function show($id)
     {
-        $evaluation = Evaluation::with(['matkul', 'lecturer', 'response'])->findOrFail($id);
+        // Retrieve the evaluation with its related matkul, lecturer
+        $evaluation = Evaluation::with(['matkul', 'lecturer'])->findOrFail($id);
 
-        // Check if the evaluation exists and if it belongs to the logged-in user
+        // Check if the evaluation exists and belongs to the logged-in user
         if (!$evaluation || $evaluation->user_id != Auth::id()) {
-            // If the evaluation doesn't exist or doesn't belong to the logged-in user, redirect to the home page
+            // Redirect if the evaluation is not accessible
             return redirect('/home')->withErrors(['error' => 'Sebaiknya jangan gegabah']);
         }
-        //Check if the evaluation is already diisi sebelumnya, kalau udah ya jangan dibolehin isi lagi dong
-        if (!$evaluation || $evaluation->completed == true){
+
+        // Check if the evaluation is already completed
+        if ($evaluation->completed) {
             return redirect('/home')->withErrors(['error' => 'Kan sudah diisi, jangan diisi lagi ya']);
         }
 
         // Fetch questions and group them by type
         $groupedQuestions = Question::all()->groupBy('type');
 
-        // Return the view with evaluation details and grouped questions
-        return view('evaluation.show', compact('evaluation', 'groupedQuestions'));
+        // Fetch the lecturer and matkul details from the evaluation
+        $lecturer = $evaluation->lecturer; // From the `Evaluation::with` eager load
+        $matkul = $evaluation->matkul;     // From the `Evaluation::with` eager load
+
+        // Return the view with evaluation details, grouped questions, and additional data
+        return view('evaluation.show', compact('evaluation', 'groupedQuestions', 'lecturer', 'matkul'));
     }
+
 
     public function submitEvaluation(Request $request, $evaluationId)
-{
-    $evaluation = Evaluation::findOrFail($evaluationId);
-    $user = Auth::user();
+    {
+        $evaluation = Evaluation::findOrFail($evaluationId);
+        $user = Auth::user();
 
-    // Ensure only the assigned user can submit responses for this evaluation
-    if ($evaluation->user_id !== $user->id) {
-        return redirect()->route('home')->withErrors(['error' => 'Gunakanlah akun milik diri sendiri..']);
-    }
-
-    // Check if the evaluation is already completed
-    if ($evaluation->completed) {
-        return redirect()->route('home')->withErrors(['error' => 'Sudah pernah Diisi.']);
-    }
-
-    // Validate that responses are provided for each question
-    $request->validate([
-        'responses' => 'required|array',
-        'responses.*' => 'required|in:1,2,3,4', // Ensures each response is between 1 and 4
-    ]);
-
-    // Loop through each question's response
-    foreach ($request->responses as $questionId => $responseValue) {
-        // Check if a response already exists for this evaluation and question
-        $existingResponse = Response::where('evaluation_id', $evaluation->id)
-            ->where('question_id', $questionId)
-            ->exists();
-
-        if ($existingResponse) {
-            return redirect()->route('home')->withErrors(['error' => 'Sudah pernah diisi.']);
+        // Ensure only the assigned user can submit responses for this evaluation
+        if ($evaluation->user_id !== $user->id) {
+            return redirect()->route('home')->withErrors(['error' => 'Gunakanlah akun milik diri sendiri..']);
         }
 
-        // Save the new response
-        Response::create([
-            'evaluation_id' => $evaluation->id,
-            'question_id' => $questionId,
-            'response_value' => $responseValue,
+        // Check if the evaluation is already completed
+        if ($evaluation->completed) {
+            return redirect()->route('home')->withErrors(['error' => 'Sudah pernah Diisi.']);
+        }
+
+        // Validate that responses are provided for each question
+        $request->validate([
+            'responses' => 'required|array',
+            'responses.*' => 'required|in:1,2,3,4', // Ensures each response is between 1 and 4
         ]);
+
+        // Loop through each question's response
+        foreach ($request->responses as $questionId => $responseValue) {
+            // Check if a response already exists for this evaluation and question
+            $existingResponse = Response::where('evaluation_id', $evaluation->id)
+                ->where('question_id', $questionId)
+                ->exists();
+
+            if ($existingResponse) {
+                return redirect()->route('home')->withErrors(['error' => 'Sudah pernah diisi.']);
+            }
+
+            // Save the new response
+            Response::create([
+                'evaluation_id' => $evaluation->id,
+                'question_id' => $questionId,
+                'response_value' => $responseValue,
+            ]);
+        }
+
+        // Mark the evaluation as completed once all responses are saved
+        $evaluation->completed = true;
+        $evaluation->save();
+
+        // Redirect back with a success message
+        return redirect()->route('home')->with('success', 'Berhasil dikumpul.');
     }
-
-    // Mark the evaluation as completed once all responses are saved
-    $evaluation->completed = true;
-    $evaluation->save();
-
-    // Redirect back with a success message
-    return redirect()->route('home')->with('success', 'Berhasil dikumpul.');
-}
 
 
     public function downloadPDF($matkulId, $lecturerId)
@@ -255,12 +262,12 @@ class EvaluasiController extends Controller
         $matkul = Matkul::find($matkulId);
         $lecturer = Lecturer::find($lecturerId);
 
-        // Retrieve responses specifically for group IDs 1 and 2
+        // Retrieve responses for groups where prodi is "TPMO"
         $responses = Response::whereHas('evaluation', function ($query) use ($matkulId, $lecturerId) {
                 $query->where('matkul_id', $matkulId)
                     ->where('lecturer_id', $lecturerId)
-                    ->whereHas('user', function ($query) {
-                        $query->whereIn('group_id', [1, 2]);
+                    ->whereHas('user.group', function ($query) {
+                        $query->where('prodi', 'TPMO');
                     });
             })
             ->with('question')
@@ -307,6 +314,7 @@ class EvaluasiController extends Controller
 
         return view('evaluation.summaryTPMO', compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
     }
+
     public function calculateSummaryTOPKR($matkulId, $lecturerId)
     {
         $matkul = Matkul::find($matkulId);
@@ -314,11 +322,11 @@ class EvaluasiController extends Controller
 
         // Retrieve responses specifically for group IDs 3 to 8
         $responses = Response::whereHas('evaluation', function ($query) use ($matkulId, $lecturerId) {
-                $query->where('matkul_id', $matkulId)
-                    ->where('lecturer_id', $lecturerId)
-                    ->whereHas('user', function ($query) {
-                        $query->whereIn('group_id', [3, 4, 5, 6, 7, 8]);
-                    });
+            $query->where('matkul_id', $matkulId)
+                ->where('lecturer_id', $lecturerId)
+                ->whereHas('user.group', function ($query) {
+                    $query->where('prodi', 'TOPKR');
+                });
             })
             ->with('question')
             ->get();

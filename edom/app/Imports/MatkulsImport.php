@@ -36,13 +36,13 @@ class MatkulsImport implements ToModel, WithHeadingRow, WithEvents
         );
 
         // Log the user data after updateOrCreate
-        Log::info('Question Data: ' . json_encode($matkuls));
+        Log::info('Matkul Data: ' . json_encode($matkuls));
 
         // Check if the user was recently created or updated
         if ($matkuls->wasRecentlyCreated) {
-            Log::info('Question was recently created: ' . json_encode($matkuls));
+            Log::info('Matkul was recently created: ' . json_encode($matkuls));
         } else {
-            Log::info('Question was updated: ' . json_encode($matkuls));
+            Log::info('Matkul was updated: ' . json_encode($matkuls));
         }
 
         return $matkuls;
