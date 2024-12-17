@@ -92,6 +92,9 @@ html {
                     <thead class="table-light">
                         <tr>
                             <th class="sticky-header">Group</th>
+                            @for ($i = 1; $i <= $maxWeekNumber; $i++) <!-- Adjust week range as needed -->
+                            <option value="{{ $i }}" {{ request('week') == $i ? 'selected' : '' }}>Minggu ke-{{ $i }}</option>
+                            @endfor
                             @foreach ($weeks->sort() as $week)
                                 <th class="sticky-header">W {{ $week }}</th>
                             @endforeach

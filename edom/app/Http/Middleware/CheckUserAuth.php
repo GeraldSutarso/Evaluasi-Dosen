@@ -13,7 +13,7 @@ class CheckUserAuth
     {
         if (!Auth::check()) {
             // User is not logged in, redirect or handle accordingly
-            return redirect('login');
+            return redirect('index');
         }
 
         return $next($request);

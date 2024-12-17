@@ -49,49 +49,50 @@ class EvaluasiController extends Controller
     {
         $evaluation = Evaluation::findOrFail($evaluationId);
         $user = Auth::user();
-
+    
         // Ensure only the assigned user can submit responses for this evaluation
         if ($evaluation->user_id !== $user->id) {
             return redirect()->route('home')->withErrors(['error' => 'Gunakanlah akun milik diri sendiri..']);
         }
-
+    
         // Check if the evaluation is already completed
         if ($evaluation->completed) {
             return redirect()->route('home')->withErrors(['error' => 'Sudah pernah Diisi.']);
         }
-
+    
         // Validate that responses are provided for each question
         $request->validate([
             'responses' => 'required|array',
             'responses.*' => 'required|in:1,2,3,4', // Ensures each response is between 1 and 4
         ]);
-
+    
         // Loop through each question's response
         foreach ($request->responses as $questionId => $responseValue) {
             // Check if a response already exists for this evaluation and question
             $existingResponse = Response::where('evaluation_id', $evaluation->id)
                 ->where('question_id', $questionId)
                 ->exists();
-
+    
             if ($existingResponse) {
                 return redirect()->route('home')->withErrors(['error' => 'Sudah pernah diisi.']);
             }
-
-            // Save the new response
+    
+            // Save the new response with the additional fields
             Response::create([
                 'evaluation_id' => $evaluation->id,
                 'question_id' => $questionId,
                 'response_value' => $responseValue,
             ]);
         }
-
+    
         // Mark the evaluation as completed once all responses are saved
         $evaluation->completed = true;
         $evaluation->save();
-
+    
         // Redirect back with a success message
         return redirect()->route('home')->with('success', 'Berhasil dikumpul.');
     }
+    
 
 
     public function downloadPDF($matkulId, $lecturerId)

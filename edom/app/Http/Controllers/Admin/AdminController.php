@@ -17,6 +17,7 @@ use App\Models\Matkul;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Models\SummaryRecord;
+use App\Models\ResponseRecord;
 
 class AdminController extends Controller
 {
@@ -241,27 +242,51 @@ class AdminController extends Controller
             }
         }
 
-        // Modified chart data logic
+                // Fetch the latest semester from SummaryRecord
+        $latestSemester = SummaryRecord::latest('created_at')->value('semester'); // Assuming 'created_at' determines latest
+
+        // Define month mapping based on the semester
+        $monthMapping = [];
+        if ($latestSemester === 'I') {
+            // Semester I: Start from September
+            $monthMapping = [
+                1 => "September",
+                2 => "Oktober",
+                3 => "November",
+                4 => "Desember",
+                5 => "Januari",
+                6 => "Februari",
+                7 => "Maret",
+                8 => "April",
+                9 => "Mei",
+                10 => "Juni",
+                11 => "Juli",
+                12 => "Agustus"
+            ];
+        } elseif ($latestSemester === 'II') {
+            // Semester II: Start from March
+            $monthMapping = [
+                1 => "Maret",
+                2 => "April",
+                3 => "Mei",
+                4 => "Juni",
+                5 => "Juli",
+                6 => "Agustus",
+                7 => "September",
+                8 => "Oktober",
+                9 => "November",
+                10 => "Desember",
+                11 => "Januari",
+                12 => "Februari"
+            ];
+        }
+
+        // Monthly chart data logic
         $chartData = DB::table('evaluations')
             ->join('users', 'evaluations.user_id', '=', 'users.id')
             ->join('groups', 'users.group_id', '=', 'groups.id')
             ->selectRaw('
                 CEIL(week_number / 4) as month_number,
-                CASE 
-                    WHEN CEIL(week_number / 4) = 1 THEN "Januari"
-                    WHEN CEIL(week_number / 4) = 2 THEN "Februari"
-                    WHEN CEIL(week_number / 4) = 3 THEN "Maret"
-                    WHEN CEIL(week_number / 4) = 4 THEN "April"
-                    WHEN CEIL(week_number / 4) = 5 THEN "Mei"
-                    WHEN CEIL(week_number / 4) = 6 THEN "Juni"
-                    WHEN CEIL(week_number / 4) = 7 THEN "Juli"
-                    WHEN CEIL(week_number / 4) = 8 THEN "Agustus"
-                    WHEN CEIL(week_number / 4) = 9 THEN "September"
-                    WHEN CEIL(week_number / 4) = 10 THEN "Oktober"
-                    WHEN CEIL(week_number / 4) = 11 THEN "November"
-                    WHEN CEIL(week_number / 4) = 12 THEN "Desember"
-
-                END as month_name,
                 groups.id as group_id,
                 groups.name as group_name,
                 COUNT(DISTINCT groups.id) as total_groups,
@@ -269,9 +294,9 @@ class AdminController extends Controller
                     WHEN evaluations.completed = 1 THEN 1 
                     ELSE 0 
                 END) as completed_count,
-                COUNT(*) as total_evaluations'
-            )
-            ->groupBy('month_number', 'month_name', 'groups.id', 'groups.name')
+                COUNT(*) as total_evaluations
+            ')
+            ->groupBy('month_number', 'groups.id', 'groups.name')
             ->orderBy('month_number')
             ->get();
 
@@ -279,8 +304,10 @@ class AdminController extends Controller
         $monthlyStats = [];
         foreach ($chartData as $record) {
             $monthNum = $record->month_number;
-            $monthName = $record->month_name;
-            
+
+            // Get the correct month name using $monthMapping
+            $monthName = $monthMapping[$monthNum] ?? 'Unknown';
+
             if (!isset($monthlyStats[$monthNum])) {
                 $monthlyStats[$monthNum] = [
                     'month' => $monthName,
@@ -288,16 +315,17 @@ class AdminController extends Controller
                     'not_completed_groups' => 0
                 ];
             }
-            
-            // A group is considered complete if all evaluations are completed
-            if ($record->completed_count == $record->total_evaluations) {
-                $monthlyStats[$monthNum]['completed_groups']++;
-            } else {
-                $monthlyStats[$monthNum]['not_completed_groups']++;
-            }
-        }
 
-        $formattedChartData = array_values($monthlyStats);
+    // A group is considered complete if all evaluations are completed
+    if ($record->completed_count == $record->total_evaluations) {
+        $monthlyStats[$monthNum]['completed_groups']++;
+    } else {
+        $monthlyStats[$monthNum]['not_completed_groups']++;
+    }
+}
+
+$formattedChartData = array_values($monthlyStats);
+
 
             // Weekly Evaluation Chart Data Logic (New)
     $weeklyStats = DB::table('evaluations')
@@ -344,6 +372,44 @@ class AdminController extends Controller
 
     return view('admin.dashboard', compact('weeks', 'tableData', 'formattedChartData', 'weeklyData'));
 
+    }
+
+    public function deleteAllEvaluations()
+    {
+        // Fetch the latest year and semester from SummaryRecord
+        $latestSummary = SummaryRecord::latest('created_at')->first();
+        $yearSemester = $latestSummary ? "{$latestSummary->year}_{$latestSummary->semester}" : 'unknown';
+
+        // Fetch all evaluations
+        $evaluations = Evaluation::all();
+
+        foreach ($evaluations as $evaluation) {
+            // Fetch responses related to the current evaluation
+            $responses = Response::where('evaluation_id', $evaluation->id)->get();
+
+            // Extract and save responses to response_records
+            foreach ($responses as $response) {
+                ResponseRecord::create([
+                    'evaluation_id'   => $evaluation->id,
+                    'user_name'       => optional($evaluation->user)->name,
+                    'group_name'      => optional($evaluation->user->group)->name,
+                    'lecturer_name'   => optional($evaluation->lecturer)->name,
+                    'matkul_name'     => optional($evaluation->matkul)->name,
+                    'question_text'   => optional($response->question)->text,
+                    'response_value'  => $response->response_value,
+                    'year_semester'   => $yearSemester, // From SummaryRecord
+                    'created_at'      => now(),
+                ]);
+            }
+
+            // Delete responses for this evaluation
+            Response::where('evaluation_id', $evaluation->id)->delete();
+        }
+
+        // Delete all evaluations
+        Evaluation::truncate(); // This removes all rows from the evaluations table
+
+        return redirect()->route('evaluations.index')->with('success', 'All evaluations and responses archived successfully.');
     }
 
 
