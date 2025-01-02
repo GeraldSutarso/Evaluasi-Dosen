@@ -1,6 +1,7 @@
 @extends('layout.main')
 
 @section('content')
+<div class="container mt-4">
 <div class="pdf-content" style="width: 100%; margin-top: 1px; font-family: Arial, sans-serif; font-size: 10px;">
     <div style="text-align: center; margin-bottom: 2px; font-weight: bold;">
         @if($lecturer->type == 1)
@@ -199,4 +200,5 @@
 </div>
 
 @endif
+</div>
 @endsection

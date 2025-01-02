@@ -15,6 +15,7 @@ class DatabaseImport implements WithMultipleSheets
             'evaluations' => new EvaluationsImport(),
             'questions' => new QuestionsImport(),
             // 'responses'=> new ResponsesImport(),
+            'mahasiswa_layanan_questions'=> new LayananQuestionsImport(),
         ];
     }
 }

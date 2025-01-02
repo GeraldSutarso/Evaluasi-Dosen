@@ -10,6 +10,9 @@ use App\Models\Question;
 use App\Models\Response;
 use App\Models\Matkul;
 use App\Models\Lecturer;
+use App\Models\LayananQuestion;
+use App\Models\LayananResponse;
+use App\Models\SummaryRecord;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -19,6 +22,7 @@ class EvaluasiController extends Controller
 {
     public function show($id)
     {
+        $summaryRecord = SummaryRecord::latest()->first() ?? new SummaryRecord();
         // Retrieve the evaluation with its related matkul, lecturer
         $evaluation = Evaluation::with(['matkul', 'lecturer'])->findOrFail($id);
 
@@ -41,59 +45,59 @@ class EvaluasiController extends Controller
         $matkul = $evaluation->matkul;     // From the `Evaluation::with` eager load
 
         // Return the view with evaluation details, grouped questions, and additional data
-        return view('evaluation.show', compact('evaluation', 'groupedQuestions', 'lecturer', 'matkul'));
+        return view('evaluation.show', compact('summaryRecord','evaluation', 'groupedQuestions', 'lecturer', 'matkul'));
+    }
+    public function layananMahasiswa()
+    {
+
+        // HALAHA AAAA
+        $summaryRecord = SummaryRecord::latest()->first();
+        $groupedQuestions = LayananQuestion::all()->groupBy('type');
+        $shitExists = LayananResponse::where('user_id', Auth::id())->exists();
+        $alreadySubmitted = false;
+        if ($shitExists) {
+            return view('evaluation.layanan', [
+                'alreadySubmitted' => true,
+                'groupedQuestions' => $groupedQuestions,
+            ]);
+        }
+
+        return view('evaluation.layanan', compact('summaryRecord','groupedQuestions','alreadySubmitted'));
     }
 
-
-    public function submitEvaluation(Request $request, $evaluationId)
+    public function submitLayananM(Request $request)
     {
-        $evaluation = Evaluation::findOrFail($evaluationId);
         $user = Auth::user();
-    
-        // Ensure only the assigned user can submit responses for this evaluation
-        if ($evaluation->user_id !== $user->id) {
-            return redirect()->route('home')->withErrors(['error' => 'Gunakanlah akun milik diri sendiri..']);
-        }
-    
-        // Check if the evaluation is already completed
-        if ($evaluation->completed) {
-            return redirect()->route('home')->withErrors(['error' => 'Sudah pernah Diisi.']);
-        }
-    
+
         // Validate that responses are provided for each question
         $request->validate([
             'responses' => 'required|array',
-            'responses.*' => 'required|in:1,2,3,4', // Ensures each response is between 1 and 4
         ]);
-    
+
         // Loop through each question's response
         foreach ($request->responses as $questionId => $responseValue) {
-            // Check if a response already exists for this evaluation and question
-            $existingResponse = Response::where('evaluation_id', $evaluation->id)
+            // Check if a response already exists for this user and question
+            $existingResponse = LayananResponse::where('user_id', $user->id)
                 ->where('question_id', $questionId)
                 ->exists();
-    
+
             if ($existingResponse) {
                 return redirect()->route('home')->withErrors(['error' => 'Sudah pernah diisi.']);
             }
-    
-            // Save the new response with the additional fields
-            Response::create([
-                'evaluation_id' => $evaluation->id,
+
+            // Save the new response
+            LayananResponse::create([
+                'user_id' => $user->id,
+                'name'=>$user->name,
+                'grup'=>$user->group_id->name,
                 'question_id' => $questionId,
                 'response_value' => $responseValue,
             ]);
         }
-    
-        // Mark the evaluation as completed once all responses are saved
-        $evaluation->completed = true;
-        $evaluation->save();
-    
-        // Redirect back with a success message
-        return redirect()->route('home')->with('success', 'Berhasil dikumpul.');
-    }
-    
 
+        // Redirect back with a success message
+        return redirect()->route('home')->with('success', 'Evaluasi layanan Berhasil dikumpul.');
+    }
 
     public function downloadPDF($matkulId, $lecturerId)
     {
@@ -326,7 +330,7 @@ class EvaluasiController extends Controller
             $query->where('matkul_id', $matkulId)
                 ->where('lecturer_id', $lecturerId)
                 ->whereHas('user.group', function ($query) {
-                    $query->where('prodi', 'TOPKR');
+                    $query->where('prodi', 'TOPKR4');
                 });
             })
             ->with('question')
@@ -431,7 +435,7 @@ class EvaluasiController extends Controller
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
     
-        $filename = "Tabulasi EDOM-EIOM TOPKR {$lecturer->name}-{$matkul->name}.pdf";
+        $filename = "Tabulasi EDOM-EIOM TOPKR4 {$lecturer->name}-{$matkul->name}.pdf";
         return $dompdf->stream($filename);
     }
     public function getTPMOdata($matkulId, $lecturerId)

@@ -16,5 +16,7 @@ class SummaryRecord extends Model
         'mengetahui_name',
         'kaprodi_tpmo',
         'kaprodi_topkr',
+        'edom_lock',
+        'layanan_lock',
     ];
 }

@@ -34,5 +34,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Evaluation::class);
     }
+    public function layananResponses()
+    {
+        return $this->hasMany(LayananResponse::class);
+    }
+    public function responses()
+    {
+        return $this->hasMany(Response::class);
+    }
+
     
 }

@@ -13,8 +13,11 @@ return new class extends Migration
         Schema::create('layanan_responses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('question_id')->constrained('questions');
-            $table->integer('response_value'); // Adjust type based on response type (e.g., rating scale)
+            // $table->string('name');
+            // $table->string('student_id'); Sorry brother, maybe next time 😣👈🤛🤏✌
+            // $table->string('group_name');
+            $table->foreignId('question_id')->constrained('layanan_questions');
+            $table->string('response_value'); // Adjust type based on response type (e.g., rating scale)
             $table->timestamps();
         });
     }

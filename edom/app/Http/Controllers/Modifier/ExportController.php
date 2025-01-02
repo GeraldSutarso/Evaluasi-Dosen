@@ -14,6 +14,7 @@ use App\Exports\GroupsExport;
 use App\Exports\LecturersExport;
 use App\Exports\MatkulsExport;
 use App\Exports\EvaluationsExport;
+use App\Exports\LayananQuestionsExport;
 use App\Exports\QuestionsExport;
 use App\Exports\ResponsesExport;
 use App\Http\Controllers\Controller;
@@ -33,7 +34,8 @@ class ExportController extends Controller
                     'Matkuls' => new MatkulsExport(),
                     'Evaluations' => new EvaluationsExport(),
                     'Questions' => new QuestionsExport(),
-                  	'Responses' => new ResponsesExport(),
+                  	// 'Responses' => new ResponsesExport(),
+                    'LayananQuestions'=> new LayananQuestionsExport(),
                 ];
             }
         }, 'download_edom_data.xlsx');

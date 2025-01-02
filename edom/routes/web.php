@@ -31,7 +31,11 @@ Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'admin', 'log.ip','log.user','2fa'])->group(function () {
     // Admin Home Route (GET request)
     Route::get('/admin/home', [AdminController::class, 'home'])->name('admin.home');
-    Route::get('admin/evaluation/{evaluation_id}', [AdminController::class, 'showEvaluationUsers'])->name('admin.showEvaluationUsers');
+    //delete button
+    Route::delete('/admin/evaluation/delete', [AdminController::class, 'deleteEvaluation'])->name('admin.evaluation.delete');
+
+    Route::get('/admin/evaluasi-layanan', [AdminController::class, 'showLayanan'])->name('admin.layanan');
+    // Route::get('admin/evaluation/{evaluation_id}', [AdminController::class, 'showEvaluationUsers'])->name('admin.showEvaluationUsers');
     Route::get('admin/evaluation/groups/{matkul_id}/{lecturer_id}', [AdminController::class, 'showEvaluationGroups'])->name('admin.evaluation.groups');
     Route::get('admin/evaluation/group/{group_id}/users/{matkul_id}/{lecturer_id}', [AdminController::class, 'showGroupUsers'])->name('admin.evaluation.group.users');
     //download PDF
@@ -57,8 +61,11 @@ Route::middleware(['auth', 'admin', 'log.ip','log.user','2fa'])->group(function 
     Route::get('/modify', [AdminController::class,'modify'])->name('admin.modify');
     //set tahun ajaran sama semester
 	Route::post('/set-summary-record', [AdminController::class, 'setSummaryRecord'])->name('set.summary.record');
+    //hapuskan memoriku tentang
+    Route::post('/admin/delete_evaluations',[AdminController::class,'deleteAllEvaluations'])->name('evaluations.delete.all');
+  	//toggle koent'ji
+      Route::post('/toggle-lock/{field}', [AdminController::class, 'toggleLock'])->name('toggleLock');
 
-  	
     //Fallback
     Route::fallback(function () {
         return redirect('/');
@@ -66,6 +73,9 @@ Route::middleware(['auth', 'admin', 'log.ip','log.user','2fa'])->group(function 
     
     //dashboard admin
     Route::get('admin/dashboard',[AdminController::class,'evaluationTable'])->name('dashboard.edom');
+    Route::get('ddsession', function(){
+        return view('ddsession');
+    })->name('ddsession');
 });
 
 // Route::middleware(['log.ip'])->group(function () {
@@ -85,7 +95,10 @@ Route::middleware(['auth','auth.check', 'log.ip', 'log.user'])->group(function (
     
     //the search bar
     Route::get('/search', [HomeController::class, 'search'])->name('search');
-    
+    //evaluasi layanan dari mahahshahshhashhw
+    Route::get('/layanan', [EvaluasiController::class, 'layananMahasiswa'])->name('layanan.form');
+    Route::post('/layanan', [EvaluasiController::class, 'submitLayananM'])->name('layanan.submit');
+
     //Evaluation routes
     Route::get('/evaluation/{id}', [EvaluasiController::class, 'show'])->name('evaluation.show');
     Route::post('/evaluation/{id}/submit', [EvaluasiController::class, 'submitEvaluation'])->name('evaluation.submit');
@@ -93,6 +106,5 @@ Route::middleware(['auth','auth.check', 'log.ip', 'log.user'])->group(function (
     Route::get('ddsession', function(){
         return view('ddsession');
     })->name('ddsession');
-    }
-);
+});
 

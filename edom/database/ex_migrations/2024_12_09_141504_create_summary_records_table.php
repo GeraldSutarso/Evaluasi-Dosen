@@ -20,6 +20,8 @@ class CreateSummaryRecordsTable extends Migration
             $table->string('mengetahui_name'); // Field for the name of "mengetahui"
             $table->string('kaprodi_tpmo'); // Field for kaprodi_tpm or TPMO
             $table->string('kaprodi_topkr'); // Field for kaprodi_topkr
+            $table->boolean('edom_lock'); // Field for edom_lock
+            $table->boolean('layanan_lock'); // Field for layanan_lock
             $table->timestamps(); // Created and updated timestamps
         });
     }

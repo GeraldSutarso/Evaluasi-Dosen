@@ -29,6 +29,7 @@ class FullDatabaseExport implements WithMultipleSheets
             'evaluations' => new EvaluationsExport(),
             'questions' => new QuestionsExport(),
             // 'responses' => new ResponsesExport(),
+            'mahasiswa_layanan_questions'=>new LayananQuestionsExport(),
         ];
     }
 }

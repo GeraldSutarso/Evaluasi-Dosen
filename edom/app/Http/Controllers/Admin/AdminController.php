@@ -18,6 +18,10 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Models\SummaryRecord;
 use App\Models\ResponseRecord;
+use App\Models\LayananRecord;
+use App\Models\LayananResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class AdminController extends Controller
 {
@@ -74,8 +78,6 @@ class AdminController extends Controller
                 $evaluationsQuery->havingRaw('SUM(evaluations.completed) < COUNT(evaluations.id)');
             }
         }
-        
-        
 
         if ($lecturerType) {
             $evaluationsQuery->whereHas('lecturer', function ($query) use ($lecturerType) {
@@ -101,6 +103,26 @@ class AdminController extends Controller
             'allGroups' => $allGroups,
           	'maxWeekNumber' => $maxWeek,
         ]);
+    }
+    
+    public function deleteEvaluation(Request $request)
+    {
+        $lecturerId = $request->input('lecturer_id');
+        $matkulId = $request->input('matkul_id');
+        $weekNumber = $request->input('week_number');
+    
+        // Find all evaluations matching the criteria
+        $evaluationIds = Evaluation::where('lecturer_id', $lecturerId)
+            ->where('matkul_id', $matkulId)
+            ->where('week_number', $weekNumber)
+            ->pluck('id');
+    
+        // Delete responses related to these evaluations
+        Response::whereIn('evaluation_id', $evaluationIds)->delete();
+    
+        // Delete the evaluations
+        Evaluation::whereIn('id', $evaluationIds)->delete();
+        return redirect()->back()->with('success', 'Evaluasi dan respons berhasil dihapus.');
     }
 
     public function showEvaluationGroups($matkul_id, $lecturer_id)
@@ -134,16 +156,13 @@ class AdminController extends Controller
         // Fetch the lecturer and matkul details
         $lecturer = Lecturer::find($lecturer_id);
         $matkul = Matkul::find($matkul_id);
-        $summaryRecord = SummaryRecord::latest()->first() ?? new SummaryRecord();
 
-
-
-        return view('admin.evaluation_groups', compact('groups', 'matkul_id', 'lecturer_id', 'lecturer', 'matkul','summaryRecord'));
+        return view('admin.evaluation_groups', compact('groups', 'matkul_id', 'lecturer_id', 'lecturer', 'matkul'));
     }
 
 
 
-//    public function showEvaluationUsers($evaluation_id)
+//    public function showEvaluationUsers($evaluation_id) Gajadi brok >U<
 //    {
 //        // Fetch the evaluation with its associated matkul and lecturer
 //        $evaluation = Evaluation::with(['matkul', 'lecturer', 'user'])->findOrFail($evaluation_id);
@@ -157,6 +176,60 @@ class AdminController extends Controller
 
 //        return view('admin.evaluation-users', compact('evaluation', 'users'));
 //    }
+
+
+public function showLayanan(Request $request)
+{
+    $search = $request->input('search');
+    $statusFilter = $request->input('status');
+    $groupFilter = $request->input('group');
+
+    // Query users with related layananResponses and apply filters
+    $usersQuery = User::with(['layananResponses', 'group'])
+        ->select('users.*')
+        ->leftJoin('groups', 'users.group_id', '=', 'groups.id');
+
+    // Apply search filter
+    if ($search) {
+        $searchTerms = explode(' ', $search);
+        $usersQuery->where(function ($query) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $query->where('users.name', 'LIKE', "%{$term}%")
+                    ->orWhere('users.student_id', 'LIKE', "%{$term}%")
+                    ->orWhere('groups.name', 'LIKE', "%{$term}%");
+            }
+        });
+    }
+
+    // Apply group filter
+    if ($groupFilter) {
+        $usersQuery->where('groups.name', $groupFilter);
+    }
+
+    // Apply status filter
+    if ($statusFilter) {
+        if ($statusFilter === 'no_layanan') {
+            $usersQuery->whereDoesntHave('layananResponses');
+        } elseif ($statusFilter === 'complete') {
+            $usersQuery->whereHas('layananResponses');
+        }
+    }
+
+    // Paginate users
+    $users = $usersQuery->paginate(10);
+    // Add status attribute
+    $users->getCollection()->transform(function ($user) {
+        $user->status = $user->layananResponses->isEmpty() ? 'no_layanan' : 'complete';
+        return $user;
+    });
+
+    // Retrieve all groups for filter dropdown
+    $allGroups = Group::select('name')->distinct()->get();
+    return view('admin.layanan', compact('users', 'search', 'statusFilter', 'groupFilter', 'allGroups'));
+}
+
+
+
     public function showGroupUsers($group_id, $matkul_id, $lecturer_id)
     {
         // Retrieve users in the group with their evaluation status
@@ -185,9 +258,28 @@ class AdminController extends Controller
 
 
     public function modify(){
-        return view('admin.modify');
+        $summaryRecord = SummaryRecord::latest()->first() ?? new SummaryRecord();
+        return view('admin.modify', compact('summaryRecord'));
     }
+    public function toggleLock(Request $request, $field)//toggle kunci untuk edom dan layanan
+    {
+        // Validate field to prevent invalid column updates
+        if (!in_array($field, ['edom_lock', 'layanan_lock'])) {
+            abort(400, 'Invalid lock field');
+        }
 
+        // Retrieve the single summary record (assuming there is only one row)
+        $summaryRecord = SummaryRecord::latest()->first();
+        if (!$summaryRecord) {
+            return redirect()->back()->with('error', 'Summary record not found.');
+        }
+
+        // Toggle the specified field
+        $summaryRecord->$field = !$summaryRecord->$field;
+        $summaryRecord->save();
+
+        return redirect()->back()->with('success', 'Kunci berhasil diperbarui.');
+    }
     public function setSummaryRecord(Request $request)
     {
         // Validate the inputs
@@ -198,6 +290,8 @@ class AdminController extends Controller
             'mengetahui_name' => 'nullable|string|max:100', // Optional "mengetahui name" field
             'kaprodi_tpmo' => 'nullable|string|max:100', // Optional field for kaprodi_tpmo
             'kaprodi_topkr' => 'nullable|string|max:100', // Optional field for kaprodi_topkr
+            'edom_lock' => 'nullable|boolean', // Optional field for edom_lock
+            'layanan_lock' => 'nullable|boolean', // Optional field for layanan_lock
         ]);
 
         // Create a new summary record
@@ -208,6 +302,8 @@ class AdminController extends Controller
             'mengetahui_name' => $request->input('mengetahui_name'),
             'kaprodi_tpmo' => $request->input('kaprodi_tpmo'),
             'kaprodi_topkr' => $request->input('kaprodi_topkr'),
+            'edom_lock' => $request->input('edom_lock'),
+            'layanan_lock' => $request->input('layanan_lock'),
         ]);
 
         // Redirect back with success message
@@ -370,7 +466,36 @@ $formattedChartData = array_values($monthlyStats);
     // Reset keys to re-index the data
     $weeklyData = array_values($weeklyData);
 
-    return view('admin.dashboard', compact('weeks', 'tableData', 'formattedChartData', 'weeklyData'));
+    // Fetch responses grouped by question
+    $chartResponses = DB::table('layanan_responses')
+    ->join('layanan_questions', 'layanan_responses.question_id', '=', 'layanan_questions.id')
+    ->select(
+        'layanan_questions.id as question_id',
+        'layanan_questions.text as question_text',
+        'layanan_questions.type as question_type',
+        'layanan_responses.response_value'
+    )
+    ->get();
+
+    $layananChartData = [];
+    $feedbackData = [];
+
+    foreach ($chartResponses as $response) {
+        if ($response->question_type === 'Feedback') {
+            // Collect feedback responses for "Feedback" type questions
+            $feedbackData[$response->question_text][] = $response->response_value;
+        } else {
+            // Convert response value to integer for numeric responses
+            $value = is_numeric($response->response_value) ? (int)$response->response_value : null;
+
+            if ($value !== null) {
+                // Count responses per question
+                $layananChartData[$response->question_text][$value] = ($layananChartData[$response->question_text][$value] ?? 0) + 1;
+            }
+        }
+    }
+
+    return view('admin.dashboard', compact('layananChartData', 'feedbackData','weeks', 'tableData', 'formattedChartData', 'weeklyData'));
 
     }
 
@@ -406,10 +531,28 @@ $formattedChartData = array_values($monthlyStats);
             Response::where('evaluation_id', $evaluation->id)->delete();
         }
 
-        // Delete all evaluations
-        Evaluation::truncate(); // This removes all rows from the evaluations table
+            // Handle Layanan Responses
+        $layananResponses = LayananResponse::all();
+        foreach ($layananResponses as $layananResponse) {
+            LayananRecord::create([
+                'response_id'    => $layananResponse->id,
+                'user_name'      => optional($layananResponse->user)->name,
+                'student_id'     => optional($layananResponse->user)->student_id,
+                'group_name'     => optional($layananResponse->user->group)->name,
+                'question_text'  => optional($layananResponse->question)->text,
+                'response_value' => $layananResponse->response_value,
+                'year_semester'  => $yearSemester, // From SummaryRecord
+                'created_at'     => now(),
+            ]);
+        }
 
-        return redirect()->route('evaluations.index')->with('success', 'All evaluations and responses archived successfully.');
+        // Delete all evaluations
+        Evaluation::query()->delete(); // Use delete() to avoid truncation issues
+
+        // Delete all layanan responses
+        LayananResponse::query()->delete();
+
+        return redirect()->route('admin.modify')->with('success', 'Evaluasi telah direset.');
     }
 
 
