@@ -314,6 +314,7 @@ class EvaluasiController extends Controller
 
     public function calculateSummaryTPMO($matkulId, $lecturerId)
     {
+        $summaryRecord = SummaryRecord::latest()->first() ?? new SummaryRecord();
         $matkul = Matkul::find($matkulId);
         $lecturer = Lecturer::find($lecturerId);
 
@@ -367,11 +368,12 @@ class EvaluasiController extends Controller
             $overallTotal += $data['sectionTotal'];
         }
 
-        return view('evaluation.summaryTPMO', compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
+        return view('evaluation.summaryTPMO', compact('summaryRecord','matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
     }
 
     public function calculateSummaryTOPKR($matkulId, $lecturerId)
     {
+        $summaryRecord = SummaryRecord::latest()->first() ?? new SummaryRecord();
         $matkul = Matkul::find($matkulId);
         $lecturer = Lecturer::find($lecturerId);
 
@@ -425,7 +427,7 @@ class EvaluasiController extends Controller
             $overallTotal += $data['sectionTotal'];
         }
 
-        return view('evaluation.summaryTOPKR', compact('matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
+        return view('evaluation.summaryTOPKR', compact('summaryRecord','matkul', 'lecturer', 'summary', 'sectionTotals', 'overallTotal'));
     }
     public function downloadTPMO($matkulId, $lecturerId)
     {

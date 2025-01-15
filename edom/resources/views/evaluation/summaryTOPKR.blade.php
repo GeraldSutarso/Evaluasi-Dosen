@@ -12,7 +12,7 @@
         <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">AKADEMI KOMUNITAS TOYOTA INDONESIA</p>
         <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">PROGRAM STUDI TATA OPERASI KENDARAAN RODA 4</p>
         {{-- ganti sesuai tahun ajaran --}}
-        <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN {{ session('tahunajaran', '2024/2025') }}</p>
+        <p style="font-size: 11px; line-height: 1.4; margin: 0; padding: 0;">TAHUN AJARAN {{ $summaryRecord->year }}</p>
     </div>
     
     <div style="margin-bottom: 2px; text-align: left;">
@@ -23,7 +23,7 @@
         @endif
         <p style="margin: 0; padding: 0;">Mata Kuliah: {{ $matkul->name }}</p>
         {{-- ini juga ganti sesuai tahun ajaran --}}
-        <p style="margin: 0; padding: 0;">Semester {{ session('semester','I') }} Tahun Akademik {{ session('tahunajaran', '2024/2025') }}</p>
+        <p style="margin: 0; padding: 0;">Semester {{ $summaryRecord->semester }} Tahun Akademik {{ $summaryRecord->year }}</p>
     </div>
 
     @php
@@ -178,16 +178,16 @@
         <tbody>
             <tr>
                 <td style="width:50%;text-align: center; vertical-align: middle;">
-                    <p>Mengetahui,<br>Wakil Direktur II</p>
+                    <p>Mengetahui,<br>{{ $summaryRecord->mengetahui }}</p>
                     <br>
                     <br>
-                    <p style="margin-bottom:0px;text-align: center;"><u><b>Mursyid</b></u></p>
+                    <p style="margin-bottom:0px;text-align: center;"><u><b>{{ $summaryRecord->mengetahui_name }}</b></u></p>
                 </td>
                 <td style="width:50%;text-align: center; vertical-align: middle;">
                     <p><br>Ketua Program Studi</p>
                     <br>
                     <br>
-                    <p style="text-align: center;"><b><u>Praditya Alambara</u></b></p>
+                    <p style="text-align: center;"><b><u>{{ $summaryRecord->kaprodi_topkr }}</u></b></p>
                 </td>
             </tr>
         </tbody>
